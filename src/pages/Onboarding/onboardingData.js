@@ -1,0 +1,48 @@
+export const onboardingSlides = [
+  {
+    id: 1,
+    type: "welcome",
+    badge: "Welcome to Hoba Labs",
+    title: "Intelligent Trading Analysis",
+    description: "Your automated trading analysis platform built around the professional ICC methodology.",
+  },
+  {
+    id: 2,
+    type: "experience",
+    badge: "Trader Profile",
+    title: "How experienced are you?",
+    description: "Select your proficiency level to customize your signal depth.",
+    options: ["Beginner", "Intermediate", "Advanced"],
+  },
+  {
+    id: 3,
+    type: "markets",
+    badge: "Market Selection",
+    title: "What markets do you trade?",
+    description: "Choose your primary asset classes for real-time monitoring.",
+    options: ["Forex", "Gold", "Indices", "Crypto"],
+    multiSelect: true,
+  },
+  {
+    id: 4,
+    type: "timeframes",
+    badge: "Execution Style",
+    title: "What do you primarily trade?",
+    description: "Select your target execution timeframe profile.",
+    options: ["Scalping", "Intraday", "Swing"],
+  },
+  {
+    id: 5,
+    type: "animated_chart",
+    badge: "Live Engine Analytics",
+    title: "Real-Time Market Execution",
+    description: "Powered by institutional algorithms scanning high-probability setups continuously.",
+  },
+  {
+    id: 6,
+    type: "ready",
+    badge: "Workspace Ready",
+    title: "You're all set.",
+    description: "Your Hoba Labs terminal workspace is fully configured and ready to go.",
+  },
+];
