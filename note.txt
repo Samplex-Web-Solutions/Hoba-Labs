@@ -1,0 +1,7 @@
+cd /var/www/hoba-labs-backend/Hoba-Labs-api
+git pull origin main
+npm install # (only if you added new packages in package.json)
+pm2 restart hoba-labs-api
+
+
+ pm2 logs hoba-labs-api

@@ -28,7 +28,7 @@ function LinkTelegram() {
 
       if (response.success) {
         login(response.user, response.token);
-        toast.success('Telegram account successfully linked! 🚀');
+        toast.success('Telegram account successfully linked!');
         setTimeout(() => navigate('/dashboard'), 1500);
       }
     } catch (err) {

@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import logo from '../../assets/images/hoba-labs-logo-horizontal.png';
 import { User, Phone, Lock, ShieldCheck, ArrowRight } from 'lucide-react';
 import { toast } from 'react-toastify';   
+import BarLoader from '../../components/common/BarLoader';
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -129,7 +130,7 @@ function Register() {
             className="w-full mt-2 py-3 px-4 rounded-xl font-semibold bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 hover:opacity-95 active:scale-[0.98] transition-all flex items-center justify-center space-x-2 shadow-lg shadow-orange-500/20 disabled:opacity-50 text-sm"
           >
             {loading ? (
-              <span className="inline-block w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+              <BarLoader />
             ) : (
               <>
                 <span>Create Account</span>
