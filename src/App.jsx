@@ -2,36 +2,36 @@ import React, { useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import AppRoutes from './routes/AppRoutes';
 import { useAuthStore } from './store/authStore';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import axios from 'axios';
 
 export default function App() {
   const { setUser, setLoadingAuth } = useAuthStore();
 
   useEffect(() => {
-    // Check Telegram WebApp initData or initialize mock session fallback for desktop testing
     const initTelegramAuth = async () => {
       try {
         setLoadingAuth(true);
         const tg = window.Telegram?.WebApp;
         
-        if (tg && tg.initData) {
-          // Real Telegram WebApp Data present
-          setUser({
-            id: tg.initDataUnsafe?.user?.id || 'HOBA-214695',
-            username: tg.initDataUnsafe?.user?.username || 'trader',
-            subscription: 'Trialing',
-            onboarding_completed: true,
+        if (tg && tg.initDataUnsafe?.user?.id) {
+          // Real Telegram WebApp: Check backend if this Telegram ID is linked
+          const telegramId = tg.initDataUnsafe.user.id;
+          const response = await axios.post('http://localhost:5000/api/auth/telegram-login', {
+            telegram_id: telegramId
           });
+
+          if (response.data.success) {
+            setUser(response.data.user);
+          }
         } else {
-          // Fallback for Telegram Desktop / local testing mode
-          setUser({
-            id: 'HOBA-214695',
-            username: 'mock_trader',
-            subscription: 'Trialing',
-            onboarding_completed: true,
-          });
+          // If running normally on the web browser, let them log in via Web Login or Link page
+          console.log('Web browser mode: Awaiting login or telegram link.');
         }
       } catch (err) {
-        console.error('Auth initialization error:', err);
+        console.error('Telegram auth sync error or account not linked yet:', err);
+        // If 404 (not linked), user remains unauthenticated so they can link or login
       } finally {
         setLoadingAuth(false);
       }
@@ -42,6 +42,14 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <ToastContainer 
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        theme="dark"
+      />
       <div className="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased selection:bg-orange-500 selection:text-slate-950">
         <AppRoutes />
       </div>

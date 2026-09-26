@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { registerApi } from '../../services/api';
 import { Link } from 'react-router-dom';
+import logo from '../../assets/images/hoba-labs-logo-horizontal.png';
 import { User, Phone, Lock, ShieldCheck, ArrowRight } from 'lucide-react';
+import { toast } from 'react-toastify';   
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -13,41 +15,46 @@ function Register() {
     password: '',
   });
   const [loading, setLoading] = useState(false);
-  const { setUser } = useAuthStore();
+  const { login } = useAuthStore();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
- const handleRegister = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  try {
-    const response = await registerApi(formData);
-    
-    setUser({
-      id: response.user.id,
-      firstName: response.user.firstName,
-      lastName: response.user.lastName,
-      phone: response.user.phone,
-      subscription: response.user.subscriptionPlan,
-      onboarding_completed: response.user.onboarding_completed,
-    });
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const response = await registerApi(formData);
 
-    navigate('/onboarding');
-  } catch (err) {
-    console.error('Registration failed:', err.message);
-    alert(err.message); // Simple error popup for testing
-  } finally {
-    setLoading(false);
-  }
-};
+      login(
+        {
+          id: response.user.id,
+          firstName: response.user.firstName,
+          lastName: response.user.lastName,
+          phone: response.user.phone,
+          subscription: response.user.subscriptionPlan,
+          onboarding_completed: response.user.onboarding_completed,
+        },
+        response.token
+      );
+
+      navigate('/onboarding');
+    } catch (err) {
+      console.error('Registration failed:', err.message);
+      toast.error(err.message || 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-center px-6 py-12 select-none">
-      <div className="max-w-md mx-auto w-full space-y-6">
-<h1>LOGO</h1>
+      <div className="max-w-md mx-auto w-full space-y-2">
+        <div className="text-center space-y-1">
+          <img src={logo} alt="Hoba Labs Logo" className="mx-auto h-28" />
+        </div>
         <form onSubmit={handleRegister} className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl backdrop-blur-md">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
@@ -125,7 +132,7 @@ function Register() {
               <span className="inline-block w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
             ) : (
               <>
-                <span>Create Account & Continue</span>
+                <span>Create Account</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}

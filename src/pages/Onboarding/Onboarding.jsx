@@ -3,10 +3,14 @@ import { AnimatePresence } from 'framer-motion';
 import { ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { onboardingSlides } from './onboardingData';
 import OnboardingSlide from './OnboardingSlide';
+import { useAuthStore } from '../../store/authStore';
+import { saveOnboardingApi } from '../../services/api';
+import { toast } from 'react-toastify';
 
-export default function Onboarding({ onComplete }) {
+function Onboarding({ onComplete }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
+  const { setUser } = useAuthStore();
   const [selectedData, setSelectedData] = useState({
     experience: '',
     markets: [],
@@ -31,10 +35,25 @@ export default function Onboarding({ onComplete }) {
     } else {
       setLoading(true);
       try {
-        await new Promise((resolve) => setTimeout(resolve, 800));
+        // No userId here — the backend reads it from the session token instead,
+        // so this can't be used to edit someone else's onboarding data.
+        const payload = {
+          experience_level: selectedData.experience,
+          preferred_markets: selectedData.markets,
+          execution_style: selectedData.timeframes,
+        };
+
+        const response = await saveOnboardingApi(payload);
+
+        if (response.user) {
+          setUser(response.user);
+        }
+
+        toast.success('Account created successfully!');
         onComplete();
       } catch (err) {
-        console.error("Onboarding completion failed:", err);
+        console.error("Onboarding failed:", err);
+        toast.error(err.message || 'Failed to save onboarding preferences.');
       } finally {
         setLoading(false);
       }
@@ -49,13 +68,12 @@ export default function Onboarding({ onComplete }) {
 
   return (
     <div className="flex flex-col justify-between h-screen w-full bg-slate-950 text-white select-none overflow-hidden">
-      {/* Top Header / Skip Option */}
       <div className="flex items-center justify-between px-6 pt-6">
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 rounded-full bg-orange-500 animate-ping" />
           <span className="text-xs font-mono tracking-wider text-slate-400 uppercase">Hoba Labs Engine</span>
         </div>
-        <button 
+        <button
           onClick={onComplete}
           className="text-xs text-slate-500 hover:text-slate-300 font-medium transition-colors"
         >
@@ -63,19 +81,17 @@ export default function Onboarding({ onComplete }) {
         </button>
       </div>
 
-      {/* Slide Viewport */}
       <div className="flex-1 relative overflow-hidden flex items-center justify-center">
         <AnimatePresence mode="wait">
-          <OnboardingSlide 
-            key={onboardingSlides[currentIndex].id} 
-            slide={onboardingSlides[currentIndex]} 
+          <OnboardingSlide
+            key={onboardingSlides[currentIndex].id}
+            slide={onboardingSlides[currentIndex]}
             selectedData={selectedData}
             onSelectOption={handleSelectOption}
           />
         </AnimatePresence>
       </div>
 
-      {/* Bottom Navigation & Pagination Dots */}
       <div className="px-6 pb-8 pt-4 space-y-6 max-w-md mx-auto w-full">
         <div className="flex justify-center space-x-2">
           {onboardingSlides.map((_, idx) => (
@@ -117,3 +133,5 @@ export default function Onboarding({ onComplete }) {
     </div>
   );
 }
+
+export default Onboarding;

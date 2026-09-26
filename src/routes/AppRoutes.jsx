@@ -10,18 +10,31 @@ import Analysis from '../pages/Analysis/Analysis';
 import Signals from '../pages/Signals/Signals';
 import Backtest from '../pages/Backtest/Backtest';
 import Settings from '../pages/Settings/Settings';
+import LinkTelegram from '../pages/LinkTelegram';
 import { useAuthStore } from '../store/authStore';
 
 export default function AppRoutes() {
-  const { completeOnboarding } = useAuthStore();
-  const navigate = useNavigateHelper(); // or standard router hooks
+  const { user, completeOnboarding } = useAuthStore();
 
   return (
     <Routes>
+      {/* Smart Root Redirect */}
+      <Route 
+        path="/" 
+        element={user ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} 
+      />
+
+      {/* Public Auth & Linking Routes */}
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
-      <Route  path="/onboarding" 
-        element={ <Onboarding onComplete={() => {
+      <Route path="/link-telegram" element={<LinkTelegram />} />
+
+      {/* Onboarding Flow */}
+      <Route 
+        path="/onboarding" 
+        element={
+          <Onboarding 
+            onComplete={() => {
               completeOnboarding();
               window.location.href = '/dashboard';
             }} 
@@ -37,11 +50,11 @@ export default function AppRoutes() {
       <Route path="/backtest" element={<ProtectedRoute><Backtest /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
 
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      {/* Smart Fallback Catch-All */}
+      <Route 
+        path="*" 
+        element={user ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} 
+      />
     </Routes>
   );
-}
-
-function useNavigateHelper() {
-  return {};
 }

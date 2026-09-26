@@ -9,7 +9,7 @@ export default function ProtectedRoute({ children }) {
   if (isLoadingAuth) return <Loading />
 
   if (!isAuthenticated) {
-    return <Navigate to="/register" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   if (user && !user.onboarding_completed) {
