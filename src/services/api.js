@@ -60,3 +60,6 @@ export const linkTelegramApi = async ({ telegramId, username, phone, password })
   if (!response.ok) throw new Error(data.error || 'Failed to link Telegram account');
   return data;
 };
+
+
+console.log(localStorage.getItem('authState'));

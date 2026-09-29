@@ -28,6 +28,7 @@ function Login() {
 
     try {
       const response = await loginApi(formData);
+      console.log("TOKEN RECEIVED FROM API:", response.token); // <--- Add this line
 
       // Save both the user profile and the session token — everything from
       // here on (onboarding, linking Telegram) needs the token to prove who's asking.
@@ -97,7 +98,7 @@ function Login() {
               <input
                 type="password"
                 name="password"
-                autoComplete="current-password"
+                autoComplete="new-password"
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="••••••••"

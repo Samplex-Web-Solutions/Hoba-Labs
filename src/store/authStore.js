@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 
 export const useAuthStore = create(
   persist(
-    (set, get) => ({
+    (set) => ({
       user: null,
       token: null,
       subscription: null,
@@ -13,7 +13,7 @@ export const useAuthStore = create(
       // Actions
       setUser: (user) => set({ user, isAuthenticated: !!user }),
 
-      // Use this after login/register/link-telegram, since those now return a token too.
+      // Explicitly saving both user and token
       login: (user, token) => set({ user, token, isAuthenticated: !!user }),
 
       setSubscription: (subscription) => set({ subscription }),
@@ -27,6 +27,13 @@ export const useAuthStore = create(
     }),
     {
       name: 'hobalabs-auth-storage',
+      // Explicitly serialize and persist the token along with user state
+      partialize: (state) => ({
+        user: state.user,
+        token: state.token, // <--- Ensure this is explicitly included
+        isAuthenticated: state.isAuthenticated,
+        subscription: state.subscription,
+      }),
     }
   )
 );
