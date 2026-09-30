@@ -2,7 +2,6 @@ import { useAuthStore } from '../store/authStore';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-// Reads the current token straight from the store (works outside React components too).
 const authHeader = () => {
   const token = useAuthStore.getState().token;
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -32,8 +31,6 @@ export async function loginApi(credentials) {
   return data;
 }
 
-// No more userId in the payload — the backend now identifies the user from
-// the Authorization header (the JWT issued at login/register).
 export const saveOnboardingApi = async (formData) => {
   const response = await fetch(`${API_BASE_URL}/auth/onboarding`, {
     method: 'POST',
@@ -46,9 +43,6 @@ export const saveOnboardingApi = async (formData) => {
   return data;
 };
 
-// Links Telegram to the current account. If the user is already logged in
-// (has a token), phone/password are omitted and the backend trusts the
-// session instead. If not, pass { phone, password } as well.
 export const linkTelegramApi = async ({ telegramId, username, phone, password }) => {
   const response = await fetch(`${API_BASE_URL}/auth/link-telegram`, {
     method: 'POST',
@@ -61,5 +55,25 @@ export const linkTelegramApi = async ({ telegramId, username, phone, password })
   return data;
 };
 
+export async function getSubscriptionPlansApi() {
+  const response = await fetch(`${API_BASE_URL}/subscription/plans`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json', ...authHeader() },
+  });
 
-console.log(localStorage.getItem('authState'));
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'Failed to fetch subscription plans');
+  return data;
+}
+
+export async function initializeSubscriptionPaymentApi(planKey) {
+  const response = await fetch(`${API_BASE_URL}/subscription/initialize`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeader() },
+    body: JSON.stringify({ plan_key: planKey }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'Failed to initialize payment');
+  return data;
+}

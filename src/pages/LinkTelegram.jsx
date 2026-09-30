@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import { useAuthStore } from '../store/authStore';
 import { loginApi, linkTelegramApi } from '../services/api';
 import BarLoader from '../components/common/BarLoader';
