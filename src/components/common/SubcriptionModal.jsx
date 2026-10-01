@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getSubscriptionPlansApi, initializeSubscriptionPaymentApi } from '../../services/api';
-import { X, Crown, CheckCircle2, Loader2 } from 'lucide-react';
+import { X, Crown, CheckCircle2, Loader2, LayersPlus } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 const SubscriptionModal = ({ isOpen, onClose }) => {
@@ -52,7 +52,7 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 relative shadow-2xl">
+      <div className="bg-slate-900 border border-slate-800 rounded-md max-w-xl w-full p-6 relative shadow-2xl">
         
         <button 
           onClick={onClose}
@@ -62,10 +62,10 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
         </button>
 
         <div className="text-center mb-6">
-          <div className="w-12 h-12 bg-orange-500/10 border border-orange-500/20 text-orange-400 rounded-2xl flex items-center justify-center mx-auto mb-3">
-            <Crown className="w-6 h-6" />
+          <div className="w-12 h-12 bg-orange-500/10 border border-orange-500/20 text-orange-400 rounded-md flex items-center justify-center mx-auto mb-3">
+            <LayersPlus className="w-6 h-6"/>
           </div>
-          <h2 className="text-xl font-bold text-slate-100">Upgrade to Hoba Labs Pro</h2>
+          <h2 className="text-xl font-semibold text-slate-100">Upgrade to Hoba Labs Pro</h2>
           <p className="text-xs text-slate-400 mt-1">Select a billing cycle to unlock automated trading signals</p>
         </div>
 
@@ -84,14 +84,14 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
                   <div
                     key={plan.plan_key}
                     onClick={() => setSelectedPlanKey(plan.plan_key)}
-                    className={`p-4 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between ${
+                    className={`p-4 rounded-md border cursor-pointer transition-all flex flex-col justify-between ${
                       isSelected 
                         ? 'bg-orange-500/10 border-orange-500 text-slate-100 shadow-lg shadow-orange-500/10' 
                         : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className={`text-xs font-bold ${isSelected ? 'text-orange-400' : 'text-slate-200'}`}>
+                      <span className={`text-xs font-semibold ${isSelected ? 'text-orange-400' : 'text-slate-200'}`}>
                         {plan.name}
                       </span>
                       <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-800">
@@ -100,7 +100,7 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
                     </div>
 
                     <div>
-                      <div className="text-sm font-extrabold text-slate-100">${Number(plan.amount).toFixed(2)}</div>
+                      <div className="text-sm font-semibold text-slate-100">${Number(plan.amount).toFixed(2)}</div>
                       <div className="text-[11px] text-emerald-400 font-mono mt-0.5">
                         ₦{plan.naira_price?.toLocaleString()}
                       </div>
@@ -110,21 +110,23 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
               })}
             </div>
 
-            <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2 text-xs text-slate-300">
+            <div className="bg-slate-950 p-4 rounded-md border border-slate-800 space-y-2 text-xs text-slate-300">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>Real-time XAUUSD & BTCUSD signal webhooks</span>
+                                <span>24/7 Access Telegram Bot</span>
+
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>Unlimited Telegram Bot Mini-App access</span>
+                              <span>Real-Time Automated Multi-Asset Signal Stream</span>
+
               </div>
             </div>
 
             <button
               onClick={handleCheckout}
               disabled={processing}
-              className="w-full py-3.5 bg-orange-500 hover:bg-orange-600 text-slate-950 font-bold rounded-xl text-sm transition-all shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full py-3.5 bg-orange-500 hover:bg-orange-600 text-slate-950 font-semibold rounded-md text-sm transition-all shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {processing ? (
                 <>

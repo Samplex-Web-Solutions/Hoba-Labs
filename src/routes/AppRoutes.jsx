@@ -12,6 +12,7 @@ import Backtest from '../pages/Backtest/Backtest';
 import Settings from '../pages/Settings/Settings';
 import LinkTelegram from '../pages/LinkTelegram';
 import { useAuthStore } from '../store/authStore';
+import DashboardLayout from '../components/layout/DashboardLayout';
 
 export default function AppRoutes() {
   const { user, completeOnboarding } = useAuthStore();
@@ -19,9 +20,9 @@ export default function AppRoutes() {
   return (
     <Routes>
       {/* Smart Root Redirect */}
-      <Route 
-        path="/" 
-        element={user ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} 
+      <Route
+        path="/"
+        element={user ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />}
       />
 
       {/* Public Auth & Linking Routes */}
@@ -30,32 +31,34 @@ export default function AppRoutes() {
       <Route path="/link-telegram" element={<LinkTelegram />} />
 
       {/* Onboarding Flow: Requires login, but ensures onboarding_completed is false */}
-      <Route 
-        path="/onboarding" 
+      <Route
+        path="/onboarding"
         element={
           <ProtectedRoute requireOnboarding={false}>
-            <Onboarding 
+            <Onboarding
               onComplete={() => {
                 completeOnboarding();
                 window.location.href = '/dashboard';
-              }} 
+              }}
             />
           </ProtectedRoute>
-        } 
+        }
       />
-      
-      {/* Protected Terminal Routes: Requires login AND completed onboarding */}
-      <Route path="/dashboard" element={<ProtectedRoute requireOnboarding={true}><Dashboard /></ProtectedRoute>} />
-      <Route path="/markets" element={<ProtectedRoute requireOnboarding={true}><Markets /></ProtectedRoute>} />
-      <Route path="/analysis" element={<ProtectedRoute><Analysis /></ProtectedRoute>} />
-      <Route path="/signals" element={<ProtectedRoute><Signals /></ProtectedRoute>} />
-      <Route path="/backtest" element={<ProtectedRoute><Backtest /></ProtectedRoute>} />
-      <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+
+      <Route element={<DashboardLayout />}>
+        {/* Protected Terminal Routes: Requires login AND completed onboarding */}
+        <Route path="/dashboard" element={<ProtectedRoute requireOnboarding={true}><Dashboard /></ProtectedRoute>} />
+        <Route path="/markets" element={<ProtectedRoute requireOnboarding={true}><Markets /></ProtectedRoute>} />
+        <Route path="/analysis" element={<ProtectedRoute><Analysis /></ProtectedRoute>} />
+        <Route path="/signals" element={<ProtectedRoute><Signals /></ProtectedRoute>} />
+        <Route path="/backtest" element={<ProtectedRoute><Backtest /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+      </Route>
 
       {/* Smart Fallback Catch-All */}
-      <Route 
-        path="*" 
-        element={user ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} 
+      <Route
+        path="*"
+        element={user ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />}
       />
     </Routes>
   );

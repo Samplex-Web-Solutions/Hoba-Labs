@@ -2,23 +2,25 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { loginApi } from '../../services/api';
-import { Phone, Lock, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Mail, Lock, ShieldCheck, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import logo from '../../assets/images/hoba-labs-logo-horizontal.png';
 import { toast } from 'react-toastify';
-import BarLoader  from '../../components/common/BarLoader';
+import BarLoader from '../../components/common/BarLoader';
 
 function Login() {
   const [formData, setFormData] = useState({
-    phone: '',
+    loginIdentifier: '',
     password: '',
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const { login } = useAuthStore();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleLogin = async (e) => {
@@ -28,15 +30,14 @@ function Login() {
 
     try {
       const response = await loginApi(formData);
-      console.log("TOKEN RECEIVED FROM API:", response.token); // <--- Add this line
+      console.log("TOKEN RECEIVED FROM API:", response.token);
 
-      // Save both the user profile and the session token — everything from
-      // here on (onboarding, linking Telegram) needs the token to prove who's asking.
       login(
         {
           id: response.user.id,
           firstName: response.user.firstName,
           lastName: response.user.lastName,
+          email: response.user.email,
           phone: response.user.phone,
           subscription: response.user.subscriptionPlan,
           onboarding_completed: response.user.onboarding_completed,
@@ -51,8 +52,7 @@ function Login() {
       }
     } catch (err) {
       console.error('Login failed:', err);
-      setErrorMsg(err.message || 'Invalid phone number or password.');
-      // toast.error(err.message || 'Login failed. Please try again.')
+      setErrorMsg(err.message || 'Invalid email/phone number or password.');
     } finally {
       setLoading(false);
     }
@@ -70,23 +70,23 @@ function Login() {
             <h2 className="text-2xl text-center font-bold tracking-tight pb-4 pt-4">Welcome Back</h2>
 
             {errorMsg && (
-              <div className="p-3  animate-pulse ease-in-out rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs text-center font-mono">
+              <div className="p-3 animate-pulse ease-in-out rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs text-center font-mono">
                 {errorMsg}
               </div>
             )}
 
-            <label className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">Phone Number (WhatsApp)</label>
+            <label className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">Email or Phone Number</label>
             <div className="relative flex items-center">
-              <Phone className="absolute left-3 w-4 h-4 text-slate-500" />
+              <Mail className="absolute left-3 w-4 h-4 text-slate-500" />
               <input
                 type="text"
-                name="phone"
-                autoComplete="off"
-                value={formData.phone}
+                name="loginIdentifier"
+                autoComplete="username"
+                value={formData.loginIdentifier}
                 onChange={handleChange}
-                placeholder="09057973810"
+                placeholder="name@example.com or phone"
                 required
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-orange-500 font-mono transition-colors"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-orange-500 transition-colors"
               />
             </div>
           </div>
@@ -96,15 +96,22 @@ function Login() {
             <div className="relative flex items-center">
               <Lock className="absolute left-3 w-4 h-4 text-slate-500" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 name="password"
-                autoComplete="new-password"
+                autoComplete="current-password"
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="••••••••"
                 required
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-orange-500 transition-colors"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-10 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-orange-500 transition-colors"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 text-slate-500 hover:text-slate-300"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
           </div>
 
