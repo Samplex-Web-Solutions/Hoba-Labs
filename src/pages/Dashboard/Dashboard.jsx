@@ -15,7 +15,7 @@ const Dashboard = () => {
   const [copied, setCopied] = useState(false);
   const [botcopied, setBotCopied] = useState(false);
   const frontendUrl = import.meta.env.VITE_FRONTEND_URL;
-  const referralCode = user?.referral_code || 'HOBA-TEST';
+  const referralCode = user?.referralCode;
   const referralLink = `${frontendUrl}?ref=${referralCode}`;
   const bot_url = import.meta.env.VITE_BOT_URL;
 

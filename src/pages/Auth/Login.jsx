@@ -39,6 +39,7 @@ function Login() {
           lastName: response.user.lastName,
           email: response.user.email,
           phone: response.user.phone,
+          referralCode: response.user.referralCode,
           subscription: response.user.subscriptionPlan,
           onboarding_completed: response.user.onboarding_completed,
         },
