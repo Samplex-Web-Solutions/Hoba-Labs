@@ -59,12 +59,6 @@ const Dashboard = () => {
     setTimeout(() => setBotCopied(false), 2000);
   };
 
-  const logout = () => {
-    useAuthStore.getState().setUser(null);
-    localStorage.removeItem('authState');
-    navigate('/login');
-  };
-
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-100">
       {/* Main Content Area */}

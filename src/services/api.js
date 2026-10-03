@@ -99,8 +99,18 @@ export const fetchSignalsApi = async (token) => {
   });
 
   const data = await response.json();
+
   if (!response.ok) {
+    // Check if the backend blocked the request due to an expired subscription
+    if (response.status === 403) {
+      // You can throw a specific error type or object so your component knows to redirect
+      const error = new Error(data.message || 'Subscription expired');
+      error.isSubscriptionExpired = true;
+      throw error;
+    }
+
     throw new Error(data.message || 'Failed to fetch signals');
   }
+
   return data.signals;
 };

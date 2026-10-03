@@ -87,7 +87,7 @@ const Sidebar = ({ onOpenSubscriptionModal, isMobileOpen, onCloseMobile }) => {
           })}
         </nav>
 
-        {/* Subscription Card */}
+        {/* Subscription Status & Upgrade Card */}
         <div className="p-4 mx-4 mb-4 rounded-md bg-slate-950 border border-slate-800">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
@@ -116,7 +116,8 @@ const Sidebar = ({ onOpenSubscriptionModal, isMobileOpen, onCloseMobile }) => {
             className="text-slate-400 group hover:text-red-400 p-2 flex gap-2 rounded-lg hover:bg-red-900/30 transition-colors"
             title="Logout"
           >
-            <LogOut className="w-5 h-5 group-hover:rotate-12 duration-200 ease-in-out" /><span className="text-sm font-medium">Sign Out</span>
+            <LogOut className="w-5 h-5 group-hover:rotate-12 duration-200 ease-in-out" />
+            <span className="text-sm font-medium">Sign Out</span>
           </button>
         </div>
       </aside>
