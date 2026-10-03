@@ -78,6 +78,17 @@ export async function initializeSubscriptionPaymentApi(planKey) {
   return data;
 }
 
+export async function verifySubscriptionPaymentApi(reference) {
+  const response = await fetch(`${API_BASE_URL}/subscription/verify/${reference}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json', ...authHeader() },
+  });
+
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'Failed to verify transaction');
+  return data;
+}
+
 export const fetchSignalsApi = async (token) => {
   const response = await fetch(`${API_BASE_URL}/signals`, {
     method: 'GET',

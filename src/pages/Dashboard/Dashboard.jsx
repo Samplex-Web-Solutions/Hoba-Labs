@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../../store/authStore';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import SubscriptionModal from '../../components/common/SubcriptionModal';
+import { verifySubscriptionPaymentApi } from '../../services/api';
 import {
   User, Phone, TrendingUp, Bot, Users, Copy, Check, Crown,
   BotIcon
@@ -11,6 +12,7 @@ import { toast } from 'react-toastify';
 const Dashboard = () => {
   const { user } = useAuthStore();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [isSubModalOpen, setIsSubModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [botcopied, setBotCopied] = useState(false);
@@ -19,6 +21,29 @@ const Dashboard = () => {
   const referralLink = `${frontendUrl}?ref=${referralCode}`;
   const bot_url = import.meta.env.VITE_BOT_URL;
 
+  // Automatically catch and verify payment when Paystack redirects back
+  useEffect(() => {
+    const paymentStatus = searchParams.get('payment');
+    const reference = searchParams.get('reference');
+
+    if (paymentStatus === 'verified' && reference) {
+      const verifyPayment = async () => {
+        try {
+          const data = await verifySubscriptionPaymentApi(reference);
+          if (data.success) {
+            toast.success('Subscription verified and activated successfully!');
+            setSearchParams({});
+            window.location.reload(); // Refresh to pull latest user subscription state
+          }
+        } catch (err) {
+          console.error('Verification error:', err);
+          toast.error(err.message || 'Payment verification failed.');
+        }
+      };
+
+      verifyPayment();
+    }
+  }, [searchParams, setSearchParams]);
 
   const handleCopyReferral = () => {
     navigator.clipboard.writeText(referralLink);
@@ -27,13 +52,12 @@ const Dashboard = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-   const handleCopyBotLink = () => {
+  const handleCopyBotLink = () => {
     navigator.clipboard.writeText(bot_url);
     setBotCopied(true);
-    toast.success('link copied!');
+    toast.success('Link copied!');
     setTimeout(() => setBotCopied(false), 2000);
   };
-
 
   const logout = () => {
     useAuthStore.getState().setUser(null);
@@ -48,7 +72,6 @@ const Dashboard = () => {
 
         {/* Top Navigation / Header Bar */}
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-900 border border-slate-800 rounded-md p-6 mb-8 shadow-xl gap-4">
-
           <div>
             <h1 className="text-2xl font-bold tracking-tight">
               Welcome back, {user?.firstName || user?.first_name || 'Trader'}!
@@ -132,8 +155,9 @@ const Dashboard = () => {
               </div>
               <h3 className="text-slate-400 text-sm font-medium">Active Strategy</h3>
               <p className="text-2xl font-bold text-slate-100 mt-1">Smart Money</p>
-              <button><Link to="/signals">               <p className="text-xs text-slate-500 mt-2">View Sinals History</p>
-              </Link></button>
+              <Link to="/signals">
+                <p className="text-xs text-slate-500 mt-2 hover:text-orange-400 transition-colors">View Signals History</p>
+              </Link>
             </div>
 
             {/* Referral Banner Card */}
@@ -167,7 +191,7 @@ const Dashboard = () => {
         </div>
 
         <div className="md:mt-6">
-          <div className=" bg-gradient-to-r from-slate-900 via-slate-900 to-orange-950/40 border border-orange-500/20 rounded-md p-6 shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-orange-950/40 border border-orange-500/20 rounded-md p-6 shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <h3 className="text-lg font-semibold text-orange-400 flex items-center gap-2">
                 <BotIcon className="w-5 h-5 md:w-8 md:h-8" /> Telegram Notification
@@ -195,8 +219,8 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-
         </div>
+
       </main>
 
       {/* Subscription Modal Integration */}
