@@ -47,7 +47,12 @@ export const linkTelegramApi = async ({ telegramId, username, phone, password })
   const response = await fetch(`${API_BASE_URL}/auth/link-telegram`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...authHeader() },
-    body: JSON.stringify({ telegram_id: telegramId, username, phone, password }),
+    body: JSON.stringify({ 
+      telegram_id: telegramId, 
+      username, 
+      loginIdentifier: phone, // Mapped to match backend expectation
+      password 
+    }),
   });
 
   const data = await response.json();
