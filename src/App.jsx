@@ -3,87 +3,67 @@ import { BrowserRouter } from 'react-router-dom';
 import AppRoutes from './routes/AppRoutes';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import './App.css'
 
 export default function App() {
   return (
     <BrowserRouter>
-      <ToastContainer 
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        theme="dark"
-      />
       <div className="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased selection:bg-orange-500 selection:text-slate-950">
         <AppRoutes />
       </div>
+
+      {/* Global Toast Container */}
+      <ToastContainer
+        limit={3}
+        theme="dark"
+        style={{ width: 'auto', minWidth: '100px', maxWidth: '150px' }}
+        toastStyle={{
+          backgroundColor: '#090d16',
+          color: '#f8fafc',
+          border: '1px solid #1e293b',
+          borderRadius: '12px',
+          padding: '10px 14px',
+          fontSize: '12px',
+          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
+        }}
+      />
     </BrowserRouter>
   );
 }
 
 
 
-
-
-
-
-
-
-
-
-
-// import React, { useEffect } from 'react';
+// import React from 'react';
 // import { BrowserRouter } from 'react-router-dom';
 // import AppRoutes from './routes/AppRoutes';
-// import { useAuthStore } from './store/authStore';
 // import { ToastContainer } from 'react-toastify';
 // import 'react-toastify/dist/ReactToastify.css';
-// import axios from 'axios';
+// import 
 
 // export default function App() {
-//   const { setUser, setLoadingAuth } = useAuthStore();
-
-//   useEffect(() => {
-//     const initTelegramAuth = async () => {
-//       try {
-//         setLoadingAuth(true);
-//         const tg = window.Telegram?.WebApp;
-        
-//         if (tg && tg.initDataUnsafe?.user?.id) {
-//           // Real Telegram WebApp: Check backend if this Telegram ID is linked
-//           const telegramId = tg.initDataUnsafe.user.id;
-//           const response = await axios.post('http://localhost:5000/api/auth/telegram-login', {
-//             telegram_id: telegramId
-//           });
-
-//           if (response.data.success) {
-//             setUser(response.data.user);
-//           }
-//         } else {
-//           // If running normally on the web browser, let them log in via Web Login or Link page
-//           console.log('Web browser mode: Awaiting login or telegram link.');
-//         }
-//       } catch (err) {
-//         console.error('Telegram auth sync error or account not linked yet:', err);
-//         // If 404 (not linked), user remains unauthenticated so they can link or login
-//       } finally {
-//         setLoadingAuth(false);
-//       }
-//     };
-
-//     initTelegramAuth();
-//   }, [setUser, setLoadingAuth]);
-
 //   return (
 //     <BrowserRouter>
-//       <ToastContainer 
+//       <ToastContainer
 //         position="top-right"
-//         autoClose={3000}
+//         autoClose={1000} // Closes faster so it doesn't linger
 //         hideProgressBar={false}
-//         newestOnTop
+//         newestOnTop={true}
 //         closeOnClick
-//         theme="dark"
+//         rtl={false}
+//         pauseOnFocusLoss
+//         draggable
+//         pauseOnHover
+//         theme="dark" // Matches your dark slate-950 theme
+//         style={{ width: 'auto', minWidth: '150px', maxWidth: '180x' }}
+//         toastStyle={{
+//           backgroundColor: '#090d16', // Deep dark slate background
+//           color: '#f8fafc',
+//           border: '1px solid #1e293b', // Subtle border
+//           borderRadius: '12px',       // Smooth rounded corners
+//           padding: '6px 14px',       // Compact padding
+//           fontSize: '13px',
+//           boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
+//         }}
 //       />
 //       <div className="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased selection:bg-orange-500 selection:text-slate-950">
 //         <AppRoutes />
@@ -91,3 +71,73 @@ export default function App() {
 //     </BrowserRouter>
 //   );
 // }
+
+
+
+
+
+
+
+
+
+
+
+
+// // import React, { useEffect } from 'react';
+// // import { BrowserRouter } from 'react-router-dom';
+// // import AppRoutes from './routes/AppRoutes';
+// // import { useAuthStore } from './store/authStore';
+// // import { ToastContainer } from 'react-toastify';
+// // import 'react-toastify/dist/ReactToastify.css';
+// // import axios from 'axios';
+
+// // export default function App() {
+// //   const { setUser, setLoadingAuth } = useAuthStore();
+
+// //   useEffect(() => {
+// //     const initTelegramAuth = async () => {
+// //       try {
+// //         setLoadingAuth(true);
+// //         const tg = window.Telegram?.WebApp;
+        
+// //         if (tg && tg.initDataUnsafe?.user?.id) {
+// //           // Real Telegram WebApp: Check backend if this Telegram ID is linked
+// //           const telegramId = tg.initDataUnsafe.user.id;
+// //           const response = await axios.post('http://localhost:5000/api/auth/telegram-login', {
+// //             telegram_id: telegramId
+// //           });
+
+// //           if (response.data.success) {
+// //             setUser(response.data.user);
+// //           }
+// //         } else {
+// //           // If running normally on the web browser, let them log in via Web Login or Link page
+// //           console.log('Web browser mode: Awaiting login or telegram link.');
+// //         }
+// //       } catch (err) {
+// //         console.error('Telegram auth sync error or account not linked yet:', err);
+// //         // If 404 (not linked), user remains unauthenticated so they can link or login
+// //       } finally {
+// //         setLoadingAuth(false);
+// //       }
+// //     };
+
+// //     initTelegramAuth();
+// //   }, [setUser, setLoadingAuth]);
+
+// //   return (
+// //     <BrowserRouter>
+// //       <ToastContainer 
+// //         position="top-right"
+// //         autoClose={3000}
+// //         hideProgressBar={false}
+// //         newestOnTop
+// //         closeOnClick
+// //         theme="dark"
+// //       />
+// //       <div className="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased selection:bg-orange-500 selection:text-slate-950">
+// //         <AppRoutes />
+// //       </div>
+// //     </BrowserRouter>
+// //   );
+// // }

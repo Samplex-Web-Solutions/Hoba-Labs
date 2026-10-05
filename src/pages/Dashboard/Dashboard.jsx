@@ -7,7 +7,7 @@ import {
   User, Phone, TrendingUp, Bot, Users, Copy, Check, Crown,
   BotIcon
 } from 'lucide-react';
-import { toast } from 'react-toastify';
+import { showToast } from '../../utils/toast.js';
 
 const Dashboard = () => {
   const { user } = useAuthStore();
@@ -48,14 +48,14 @@ const Dashboard = () => {
   const handleCopyReferral = () => {
     navigator.clipboard.writeText(referralLink);
     setCopied(true);
-    toast.success('Referral link copied!');
+    showToast.success('Referral link copied!');
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleCopyBotLink = () => {
     navigator.clipboard.writeText(bot_url);
     setBotCopied(true);
-    toast.success('Link copied!');
+    showToast.success('Link copied!');
     setTimeout(() => setBotCopied(false), 2000);
   };
 
