@@ -134,7 +134,7 @@ export default function Signals() {
                           ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
                           : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
                       }`}>
-                        {signal.direction === 'BUY' ? (
+                        {signal.direction === 'BULLISH' ? (
                           <span className='flex gap-1 justify-center'><span>🟢</span><span>BUY</span></span>
                         ) : (
                           <span className='flex gap-1 justify-center'><span>🔴</span><span>SELL</span></span>
