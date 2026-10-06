@@ -32,6 +32,11 @@ const Sidebar = ({ onOpenSubscriptionModal, isMobileOpen, onCloseMobile }) => {
     navigate('/login');
   };
 
+  // Determine subscription display status
+  const subStatus = (user?.subscription_status || user?.subscription || '').toLowerCase();
+  const isPaid = subStatus === 'active' || subStatus === 'monthly' || subStatus === 'annual';
+  const planDisplay = isPaid ? (user?.subscription_plan || 'Pro Plan') : 'Free Trial';
+
   return (
     <>
       {/* Mobile Backdrop Overlay */}
@@ -96,7 +101,7 @@ const Sidebar = ({ onOpenSubscriptionModal, isMobileOpen, onCloseMobile }) => {
             <Crown className="w-4 h-4 text-orange-400" />
           </div>
           <div className="text-sm font-medium text-slate-200 mb-3 capitalize">
-            {user?.subscription_status === 'Active' ? user?.subscription_plan : 'Free Trial'}
+            {planDisplay}
           </div>
           <button
             onClick={() => {
@@ -105,7 +110,7 @@ const Sidebar = ({ onOpenSubscriptionModal, isMobileOpen, onCloseMobile }) => {
             }}
             className="w-full py-2 px-3 bg-orange-500 hover:bg-orange-600 text-slate-950 font-semibold rounded-lg text-xs transition-colors shadow-lg shadow-orange-500/10"
           >
-            Upgrade / Renew
+            {isPaid ? 'Manage Subscription' : 'Upgrade'}
           </button>
         </div>
 
@@ -123,6 +128,6 @@ const Sidebar = ({ onOpenSubscriptionModal, isMobileOpen, onCloseMobile }) => {
       </aside>
     </>
   );
-}
+};
 
 export default Sidebar;

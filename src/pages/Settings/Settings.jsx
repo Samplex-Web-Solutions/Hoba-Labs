@@ -34,6 +34,11 @@ const Settings = () => {
     marketingEmails: false,
   });
 
+  // Determine subscription display status
+  const subStatus = (user?.subscription_status || user?.subscription || '').toLowerCase();
+  const isPaid = subStatus === 'active' || subStatus === 'monthly' || subStatus === 'annual';
+  const planDisplay = isPaid ? (user?.subscription_plan || 'Pro Plan') : 'Free Trial';
+
   const handleProfileChange = (e) => {
     setProfileData({ ...profileData, [e.target.name]: e.target.value });
   };
@@ -100,18 +105,18 @@ const Settings = () => {
                 <span>Subscription & Plan</span>
               </div>
               <span className={`text-xs px-2.5 py-1 rounded-full font-medium capitalize ${
-                user?.subscription_status === 'Active' 
+                isPaid 
                   ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
                   : 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
               }`}>
-                {user?.subscription_status === 'Active' ? 'Active Plan' : 'Free Trial'}
+                {isPaid ? 'Active Plan' : 'Free Trial'}
               </span>
             </div>
 
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
                 <p className="text-sm text-slate-300 font-medium">
-                  Current Plan: <span className="text-orange-400 font-bold capitalize">{user?.subscription_plan || 'Standard Trial'}</span>
+                  Current Plan: <span className="text-orange-400 font-bold capitalize">{planDisplay}</span>
                 </p>
                 <p className="text-xs text-slate-500 mt-1">
                   Enjoying automated Smart Money signals and 24/7 Telegram bot access.
@@ -121,7 +126,7 @@ const Settings = () => {
                 onClick={() => setIsSubModalOpen(true)}
                 className="bg-orange-500 hover:bg-orange-600 text-slate-950 font-bold px-4 py-2.5 rounded-md text-xs transition-colors shadow-lg shadow-orange-500/10"
               >
-                Upgrade / Renew Plan
+                {isPaid ? 'Manage Subscription' : 'Upgrade / Renew Plan'}
               </button>
             </div>
           </div>

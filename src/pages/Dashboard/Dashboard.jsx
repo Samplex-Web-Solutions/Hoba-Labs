@@ -5,7 +5,10 @@ import SubscriptionModal from '../../components/common/SubcriptionModal';
 import { verifySubscriptionPaymentApi } from '../../services/api';
 import {
   User, Phone, TrendingUp, Bot, Users, Copy, Check, Crown,
-  BotIcon
+  BotIcon,
+  Bell,
+  ArrowRight,
+  Clock
 } from 'lucide-react';
 import { showToast } from '../../utils/toast.js';
 
@@ -16,10 +19,20 @@ const Dashboard = () => {
   const [isSubModalOpen, setIsSubModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [botcopied, setBotCopied] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  
   const frontendUrl = import.meta.env.VITE_FRONTEND_URL;
   const referralCode = user?.referralCode;
   const referralLink = `${frontendUrl}?ref=${referralCode}`;
   const bot_url = import.meta.env.VITE_BOT_URL;
+
+  // Mock signals dropped for today (can be replaced with your live signals state/API)
+  const todaysSignals = [
+    { id: 1, pair: 'XAUUSD', type: 'BUY LIMIT', timeframe: '15m', time: '14:30', status: 'Active' },
+    { id: 2, pair: 'EURUSD', type: 'SELL STOP', timeframe: '1H', time: '11:15', status: 'Hit TP' },
+    { id: 3, pair: 'GBPUSD', type: 'ORDER BLOCK', timeframe: '4H', time: '09:00', status: 'Pending' },
+    { id: 4, pair: 'US30', type: 'BUY STOP', timeframe: '30m', time: '08:15', status: 'Active' },
+  ];
 
   // Automatically catch and verify payment when Paystack redirects back
   useEffect(() => {
@@ -31,13 +44,13 @@ const Dashboard = () => {
         try {
           const data = await verifySubscriptionPaymentApi(reference);
           if (data.success) {
-            toast.success('Subscription verified and activated successfully!');
+            showToast.success('Subscription verified and activated successfully!');
             setSearchParams({});
             window.location.reload(); // Refresh to pull latest user subscription state
           }
         } catch (err) {
           console.error('Verification error:', err);
-          toast.error(err.message || 'Payment verification failed.');
+          showToast.error(err.message || 'Payment verification failed.');
         }
       };
 
@@ -64,22 +77,116 @@ const Dashboard = () => {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 overflow-y-auto p-4 md:p-4">
 
-        {/* Top Navigation / Header Bar */}
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-900 border border-slate-800 rounded-md p-6 mb-8 shadow-xl gap-4">
-          <div>
+        {/* Top Navigation / Header Bar with Marquee & Date */}
+        <header className="flex flex-col xl:flex-row items-center justify-between bg-slate-900 border border-slate-800 rounded-md p-5 mb-8 shadow-xl gap-4">
+          
+          {/* Welcome Text */}
+          <div className="w-full xl:w-auto text-left">
             <h1 className="text-2xl font-bold tracking-tight">
               Welcome back, {user?.firstName || user?.first_name || 'Trader'}!
             </h1>
           </div>
 
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setIsSubModalOpen(true)}
-              className="flex items-center space-x-2 bg-orange-500 hover:bg-orange-600 text-slate-950 font-bold px-4 py-2.5 rounded-md text-xs transition-all shadow-lg shadow-orange-500/10"
-            >
-              <Crown className="w-4 h-4" />
-              <span>{user?.subscription_status === 'Active' ? 'Active Plan' : 'Upgrade Plan'}</span>
-            </button>
+          {/* Marquee Ticker Container */}
+          <div className="w-full xl:max-w-md overflow-hidden bg-slate-950 border border-slate-800/80 rounded-md py-1.5 px-3 flex items-center relative shadow-inner">
+            <div className="flex items-center space-x-2 mr-3 shrink-0 text-orange-400 text-xs font-bold uppercase tracking-wider border-r border-slate-800 pr-3">
+              <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+              <span>Ticker:</span>
+            </div>
+            
+            <div className="overflow-hidden relative w-full flex whitespace-nowrap">
+              <div className="flex space-x-6 animate-marquee items-center text-xs font-medium text-slate-300">
+                {todaysSignals.map((signal) => (
+                  <span key={signal.id} className="inline-flex items-center space-x-2 bg-slate-900/80 border border-slate-800 px-2.5 py-1 rounded-md">
+                    <span className="text-orange-400 font-bold">{signal.pair}</span>
+                    <span className="text-slate-400">({signal.timeframe})</span>
+                    <span className="text-emerald-400 font-semibold">{signal.type}</span>
+                    <span className="text-[10px] text-slate-500">[{signal.time}]</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Side: Date & Notification Bell */}
+          <div className="flex items-center space-x-4 shrink-0 w-full xl:w-auto justify-between xl:justify-end">
+            <div className="text-xs sm:text-sm text-slate-400 font-medium flex items-center space-x-2">
+              <Clock className="w-4 h-4 text-orange-400" />
+              <span>
+                {new Date().toLocaleDateString(undefined, {
+                  weekday: 'short',
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                })}
+              </span>
+            </div>
+
+            {/* Notification Bell Dropdown */}
+            <div className="relative">
+              <button 
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative p-2 rounded-lg bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white transition-colors focus:outline-none"
+                aria-label="View notifications"
+              >
+                {todaysSignals.length > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 bg-orange-500 text-slate-950 font-bold text-xs rounded-full h-5 w-5 flex items-center justify-center shadow-md shadow-orange-500/20">
+                    {todaysSignals.length}
+                  </span>
+                )}
+                <Bell className="w-5 h-5" />
+              </button>
+
+              {/* Signals Dropdown Menu */}
+              {showNotifications && (
+                <div className="absolute right-0 mt-3 w-80 bg-slate-900 border border-slate-800 rounded-lg shadow-2xl z-50 overflow-hidden">
+                  <div className="px-4 py-3 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                      Today's Signals ({todaysSignals.length})
+                    </span>
+                    <span className="text-[10px] text-orange-400 font-medium">Smart Money Bot</span>
+                  </div>
+
+                  <div className="divide-y divide-slate-800/60 max-h-72 overflow-y-auto text-left">
+                    {todaysSignals.length > 0 ? (
+                      todaysSignals.map((signal) => (
+                        <div key={signal.id} className="p-3 hover:bg-slate-800/40 transition-colors flex items-start space-x-3">
+                          <div className="p-2 rounded bg-orange-500/10 text-orange-400 mt-0.5">
+                            <TrendingUp className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs font-bold text-slate-200">{signal.pair} ({signal.timeframe})</p>
+                              <span className="text-[10px] text-slate-400">{signal.time}</span>
+                            </div>
+                            <p className="text-xs text-orange-400 font-medium mt-0.5">{signal.type}</p>
+                            <div className="flex items-center justify-between mt-1">
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">
+                                Status: {signal.status}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-6 text-center text-xs text-slate-500">
+                        No signals dropped for today yet.
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-2 bg-slate-950 border-t border-slate-800 text-center">
+                    <Link 
+                      to="/signals" 
+                      className="text-xs text-orange-400 hover:text-orange-300 font-semibold flex items-center justify-center space-x-1 py-1"
+                    >
+                      <span>View All Signals</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
@@ -96,7 +203,7 @@ const Dashboard = () => {
                 </h2>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-4 text-left">
                 <div>
                   <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Full Name</span>
                   <p className="text-base font-medium text-slate-200 mt-0.5">
@@ -126,7 +233,7 @@ const Dashboard = () => {
           <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
 
             {/* Stat Card 1 */}
-            <div className="bg-slate-900 border border-slate-800 rounded-md p-6 shadow-lg relative overflow-hidden group hover:border-orange-500/40 transition-colors">
+            <div className="bg-slate-900 border border-slate-800 rounded-md p-6 shadow-lg relative overflow-hidden group hover:border-orange-500/40 transition-colors text-left">
               <div className="flex justify-between items-start mb-4">
                 <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-md text-orange-500">
                   <Bot className="w-6 h-6" />
@@ -140,7 +247,7 @@ const Dashboard = () => {
             </div>
 
             {/* Stat Card 2 */}
-            <div className="bg-slate-900 border border-slate-800 rounded-md p-6 shadow-lg relative overflow-hidden group hover:border-orange-500/40 transition-colors">
+            <div className="bg-slate-900 border border-slate-800 rounded-md p-6 shadow-lg relative overflow-hidden group hover:border-orange-500/40 transition-colors text-left">
               <div className="flex justify-between items-start mb-4">
                 <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-md text-blue-400">
                   <TrendingUp className="w-6 h-6" />
@@ -156,7 +263,7 @@ const Dashboard = () => {
 
             {/* Referral Banner Card */}
             <div className="sm:col-span-2 bg-gradient-to-r from-orange-950/40 via-slate-900 to-slate-900 border border-orange-500/20 rounded-md p-6 shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div>
+              <div className="text-left">
                 <h3 className="text-lg font-semibold text-orange-400 flex items-center gap-2">
                   <Users className="w-5 h-5" /> Referral Program ($3 Bonus)
                 </h3>
@@ -186,7 +293,7 @@ const Dashboard = () => {
 
         <div className="md:mt-6">
           <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-orange-950/40 border border-orange-500/20 rounded-md p-6 shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
+            <div className="text-left">
               <h3 className="text-lg font-semibold text-orange-400 flex items-center gap-2">
                 <BotIcon className="w-5 h-5 md:w-8 md:h-8" /> Telegram Notification
               </h3>
