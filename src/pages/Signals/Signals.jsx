@@ -130,7 +130,7 @@ export default function Signals() {
                     
                     <div className="flex items-center space-x-4">
                       <div className={`p-3 rounded-xl justify-center font-black text-xs flex items-center w-20 ${
-                        signal.direction === 'BUY' 
+                        signal.direction === 'BULLISH' 
                           ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
                           : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
                       }`}>
