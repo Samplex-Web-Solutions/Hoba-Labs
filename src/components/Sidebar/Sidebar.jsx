@@ -9,7 +9,8 @@ import {
   Settings, 
   LogOut, 
   Crown,
-  X 
+  X ,
+  ChartLine
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import Logo from '../../assets/images/hoba-labs-logo-horizontal.png';
@@ -20,7 +21,7 @@ const Sidebar = ({ onOpenSubscriptionModal, isMobileOpen, onCloseMobile }) => {
 
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { name: 'Markets', path: '/markets', icon: TrendingUp },
+    { name: 'Charts', path: '/charts', icon: ChartLine },
     { name: 'Analysis', path: '/analysis', icon: LineChart },
     { name: 'Signals', path: '/signals', icon: Bell },
     { name: 'Backtest', path: '/backtest', icon: History },
@@ -33,9 +34,9 @@ const Sidebar = ({ onOpenSubscriptionModal, isMobileOpen, onCloseMobile }) => {
   };
 
   // Determine subscription display status
-  const subStatus = (user?.subscription_status || user?.subscription || '').toLowerCase();
+  const subStatus = (user?.subscription).toLowerCase();
   const isPaid = subStatus === 'active' || subStatus === 'monthly' || subStatus === 'annual';
-  const planDisplay = isPaid ? (user?.subscription_plan || 'Pro Plan') : 'Free Trial';
+  const planDisplay = isPaid ? (user?.subscription || 'Pro Plan') : 'Free Trial';
 
   return (
     <>
@@ -92,8 +93,8 @@ const Sidebar = ({ onOpenSubscriptionModal, isMobileOpen, onCloseMobile }) => {
           })}
         </nav>
 
-        {/* Subscription Status & Upgrade Card */}
-        <div className="p-4 mx-4 mb-4 rounded-md bg-slate-950 border border-slate-800">
+        {isPaid ? ''
+         : <div className="p-4 mx-4 mb-4 rounded-md bg-slate-950 border border-slate-800">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
               Plan Status
@@ -112,13 +113,13 @@ const Sidebar = ({ onOpenSubscriptionModal, isMobileOpen, onCloseMobile }) => {
           >
             {isPaid ? 'Manage Subscription' : 'Upgrade'}
           </button>
-        </div>
+        </div>}
 
         {/* User Footer / Logout */}
-        <div className="p-4 border-t border-slate-800 flex items-center justify-between">
+        <div className="p-4 mb-2 md:mb-2 border-t border-slate-800 flex items-center justify-between">
           <button
             onClick={handleLogout}
-            className="text-slate-400 group hover:text-red-400 p-2 flex gap-2 rounded-lg hover:bg-red-900/30 transition-colors"
+            className="text-slate-400 group w-full hover:text-red-400 p-3 flex gap-2 rounded-md hover:bg-red-900/30 transition-colors"
             title="Logout"
           >
             <LogOut className="w-5 h-5 group-hover:rotate-12 duration-200 ease-in-out" />

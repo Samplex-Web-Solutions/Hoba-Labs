@@ -10,6 +10,7 @@ import Analysis from '../pages/Analysis/Analysis';
 import Signals from '../pages/Signals/Signals';
 import Backtest from '../pages/Backtest/Backtest';
 import Settings from '../pages/Settings/Settings';
+import Charts from '../pages/Charts/Charts';
 import LinkTelegram from '../pages/LinkTelegram';
 import { useAuthStore } from '../store/authStore';
 import DashboardLayout from '../components/layout/DashboardLayout';
@@ -48,7 +49,7 @@ export default function AppRoutes() {
       <Route element={<DashboardLayout />}>
         {/* Protected Terminal Routes: Requires login AND completed onboarding */}
         <Route path="/dashboard" element={<ProtectedRoute requireOnboarding={true}><Dashboard /></ProtectedRoute>} />
-        <Route path="/markets" element={<ProtectedRoute requireOnboarding={true}><Markets /></ProtectedRoute>} />
+        <Route path="/charts" element={<ProtectedRoute requireOnboarding={true}><Charts /></ProtectedRoute>} />
         <Route path="/analysis" element={<ProtectedRoute><Analysis /></ProtectedRoute>} />
         <Route path="/signals" element={<ProtectedRoute><Signals /></ProtectedRoute>} />
         <Route path="/backtest" element={<ProtectedRoute><Backtest /></ProtectedRoute>} />

@@ -35,9 +35,9 @@ const Settings = () => {
   });
 
   // Determine subscription display status
-  const subStatus = (user?.subscription_status || user?.subscription || '').toLowerCase();
+  const subStatus = (user?.subscription).toLowerCase();
   const isPaid = subStatus === 'active' || subStatus === 'monthly' || subStatus === 'annual';
-  const planDisplay = isPaid ? (user?.subscription_plan || 'Pro Plan') : 'Free Trial';
+  const planDisplay = isPaid ? (user?.subscription || 'Pro Plan') : 'Free Trial';
 
   const handleProfileChange = (e) => {
     setProfileData({ ...profileData, [e.target.name]: e.target.value });
@@ -102,7 +102,7 @@ const Settings = () => {
             <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
               <div className="flex items-center gap-2 text-orange-400 font-semibold text-lg">
                 <Crown className="w-5 h-5" />
-                <span>Subscription & Plan</span>
+                <span>Subscription</span>
               </div>
               <span className={`text-xs px-2.5 py-1 rounded-full font-medium capitalize ${
                 isPaid 
@@ -122,12 +122,12 @@ const Settings = () => {
                   Enjoying automated Smart Money signals and 24/7 Telegram bot access.
                 </p>
               </div>
-              <button
+             {isPaid ? "" :  <button
                 onClick={() => setIsSubModalOpen(true)}
                 className="bg-orange-500 hover:bg-orange-600 text-slate-950 font-bold px-4 py-2.5 rounded-md text-xs transition-colors shadow-lg shadow-orange-500/10"
               >
                 {isPaid ? 'Manage Subscription' : 'Upgrade / Renew Plan'}
-              </button>
+              </button>}
             </div>
           </div>
 
