@@ -83,6 +83,20 @@ export async function initializeSubscriptionPaymentApi(planKey) {
   return data;
 }
 
+export const fetchMarketNews = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/calendar/upcoming`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json', ...authHeader() },
+    });
+    const data = await response.json();
+    return data; // Expected format: { success: true, data: [...] }
+  } catch (err) {
+    console.error('[API_ERROR] Failed to fetch market news:', err.message);
+    return { success: false, data: [] };
+  }
+};
+
 export async function verifySubscriptionPaymentApi(reference) {
   const response = await fetch(`${API_BASE_URL}/subscription/verify/${reference}`, {
     method: 'GET',

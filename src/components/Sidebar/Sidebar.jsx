@@ -10,7 +10,8 @@ import {
   LogOut, 
   Crown,
   X ,
-  ChartLine
+  ChartLine,
+  Newspaper
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import Logo from '../../assets/images/hoba-labs-logo-horizontal.png';
@@ -24,7 +25,7 @@ const Sidebar = ({ onOpenSubscriptionModal, isMobileOpen, onCloseMobile }) => {
     { name: 'Charts', path: '/charts', icon: ChartLine },
     { name: 'Analysis', path: '/analysis', icon: LineChart },
     { name: 'Signals', path: '/signals', icon: Bell },
-    { name: 'Backtest', path: '/backtest', icon: History },
+    { name: 'News Calendar', path: '/news', icon: Newspaper },
     { name: 'Settings', path: '/settings', icon: Settings },
   ];
 

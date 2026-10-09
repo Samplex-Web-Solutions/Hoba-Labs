@@ -9,6 +9,7 @@ import Markets from '../pages/Markets/Markets';
 import Analysis from '../pages/Analysis/Analysis';
 import Signals from '../pages/Signals/Signals';
 import Backtest from '../pages/Backtest/Backtest';
+import News from '../pages/News/News';
 import Settings from '../pages/Settings/Settings';
 import Charts from '../pages/Charts/Charts';
 import LinkTelegram from '../pages/LinkTelegram';
@@ -52,7 +53,7 @@ export default function AppRoutes() {
         <Route path="/charts" element={<ProtectedRoute requireOnboarding={true}><Charts /></ProtectedRoute>} />
         <Route path="/analysis" element={<ProtectedRoute><Analysis /></ProtectedRoute>} />
         <Route path="/signals" element={<ProtectedRoute><Signals /></ProtectedRoute>} />
-        <Route path="/backtest" element={<ProtectedRoute><Backtest /></ProtectedRoute>} />
+        <Route path="/news" element={<ProtectedRoute><News/></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       </Route>
 
