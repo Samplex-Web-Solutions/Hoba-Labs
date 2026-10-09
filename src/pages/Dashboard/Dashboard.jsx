@@ -24,16 +24,8 @@ const Dashboard = () => {
   
   const frontendUrl = import.meta.env.VITE_FRONTEND_URL;
   const referralCode = user?.referralCode;
-  const referralLink = `${frontendUrl}?ref=${referralCode}`;
+const referralLink = `${import.meta.env.VITE_FRONTEND_URL}/register?ref=${user?.referralCode}`;
   const bot_url = import.meta.env.VITE_BOT_URL;
-
-  // Mock signals dropped for today (can be replaced with your live signals state/API)
-  const todaysSignals = [
-    { id: 1, pair: 'XAUUSD', type: 'BUY LIMIT', timeframe: '15m', time: '14:30', status: 'Active' },
-    { id: 2, pair: 'EURUSD', type: 'SELL STOP', timeframe: '1H', time: '11:15', status: 'Hit TP' },
-    { id: 3, pair: 'GBPUSD', type: 'ORDER BLOCK', timeframe: '4H', time: '09:00', status: 'Pending' },
-    { id: 4, pair: 'US30', type: 'BUY STOP', timeframe: '30m', time: '08:15', status: 'Active' },
-  ];
 
   // Automatically catch and verify payment when Paystack redirects back
   useEffect(() => {

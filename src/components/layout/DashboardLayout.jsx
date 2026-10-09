@@ -10,12 +10,12 @@ const DashboardLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen relative bg-slate-950 font-sans flex text-slate-100 overflow-x-hidden">
+    <div className="h-screen w-screen relative bg-slate-950 font-sans flex text-slate-100 overflow-hidden">
       
       {/* Mobile Header Bar with Hamburger */}
       <div className="md:hidden fixed top-0 left-0 right-0 bg-slate-900 border-b border-slate-800 z-30 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <img src={Logo} alt="Hoba Labs" className="h-14   w-auto" />
+          <img src={Logo} alt="Hoba Labs" className="h-14 w-auto" />
         </div>
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -26,15 +26,15 @@ const DashboardLayout = () => {
         </button>
       </div>
 
-      {/* Sidebar Component with Mobile Drawer Props */}
+      {/* Sidebar Component */}
       <Sidebar 
         onOpenSubscriptionModal={() => setIsSubModalOpen(true)}
         isMobileOpen={isMobileMenuOpen}
         onCloseMobile={() => setIsMobileMenuOpen(false)}
       />
 
-      {/* Main Content Area (with top padding on mobile to clear fixed header) */}
-      <main className="flex-1 pt-20 md:pt-2 overflow-y-auto min-w-0">
+      {/* Main Content Area (Scrolls independently) */}
+      <main className="flex-1 h-full pt-20 md:pt-0 overflow-y-auto min-w-0">
         <Outlet />
       </main>
 

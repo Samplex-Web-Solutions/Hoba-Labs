@@ -11,7 +11,8 @@ import {
   Crown,
   X ,
   ChartLine,
-  Newspaper
+  Newspaper,
+  UserPlus
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import Logo from '../../assets/images/hoba-labs-logo-horizontal.png';
@@ -23,9 +24,9 @@ const Sidebar = ({ onOpenSubscriptionModal, isMobileOpen, onCloseMobile }) => {
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Charts', path: '/charts', icon: ChartLine },
-    { name: 'Analysis', path: '/analysis', icon: LineChart },
     { name: 'Signals', path: '/signals', icon: Bell },
     { name: 'News Calendar', path: '/news', icon: Newspaper },
+    { name: 'Affiliate', path: '/affiliate', icon: UserPlus },
     { name: 'Settings', path: '/settings', icon: Settings },
   ];
 
@@ -80,14 +81,14 @@ const Sidebar = ({ onOpenSubscriptionModal, isMobileOpen, onCloseMobile }) => {
                 to={item.path}
                 onClick={onCloseMobile}
                 className={({ isActive }) =>
-                  `flex items-center space-x-3 px-4 py-3 md:py-6 lg:py-3 rounded-md text-sm md:text-lg lg:text-sm font-medium transition-colors ${
+                  `flex items-center space-x-3 px-4 py-3 md:py-6 lg:py-3 rounded-md text-[16px] md:text-lg lg:text-sm font-medium transition-colors ${
                     isActive
                       ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
                       : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                   }`
                 }
               >
-                <Icon className="w-5 h-5 md:w-8 md:h-8 lg:w-5 lg:h-5" />
+                <Icon className="w-6 h-6 md:w-8 md:h-8 lg:w-5 lg:h-5" />
                 <span>{item.name}</span>
               </NavLink>
             );
@@ -117,7 +118,7 @@ const Sidebar = ({ onOpenSubscriptionModal, isMobileOpen, onCloseMobile }) => {
         </div>}
 
         {/* User Footer / Logout */}
-        <div className="p-4 mb-2 md:mb-2 border-t border-slate-800 flex items-center justify-between">
+        <div className="p-4 mb-12 md:mb-2 border-t border-slate-800 flex items-center justify-between">
           <button
             onClick={handleLogout}
             className="text-slate-400 group w-full hover:text-red-400 p-3 flex gap-2 rounded-md hover:bg-red-900/30 transition-colors"

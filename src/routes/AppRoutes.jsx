@@ -5,12 +5,10 @@ import Register from '../pages/Auth/Register';
 import Login from '../pages/Auth/Login';
 import Onboarding from '../pages/Onboarding/Onboarding';
 import Dashboard from '../pages/Dashboard/Dashboard';
-import Markets from '../pages/Markets/Markets';
-import Analysis from '../pages/Analysis/Analysis';
 import Signals from '../pages/Signals/Signals';
-import Backtest from '../pages/Backtest/Backtest';
 import News from '../pages/News/News';
 import Settings from '../pages/Settings/Settings';
+import Affiliate from '../pages/Affiliate/Affiliate';
 import Charts from '../pages/Charts/Charts';
 import LinkTelegram from '../pages/LinkTelegram';
 import { useAuthStore } from '../store/authStore';
@@ -51,7 +49,7 @@ export default function AppRoutes() {
         {/* Protected Terminal Routes: Requires login AND completed onboarding */}
         <Route path="/dashboard" element={<ProtectedRoute requireOnboarding={true}><Dashboard /></ProtectedRoute>} />
         <Route path="/charts" element={<ProtectedRoute requireOnboarding={true}><Charts /></ProtectedRoute>} />
-        <Route path="/analysis" element={<ProtectedRoute><Analysis /></ProtectedRoute>} />
+        <Route path="/affiliate" element={<ProtectedRoute><Affiliate /></ProtectedRoute>} />
         <Route path="/signals" element={<ProtectedRoute><Signals /></ProtectedRoute>} />
         <Route path="/news" element={<ProtectedRoute><News/></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />

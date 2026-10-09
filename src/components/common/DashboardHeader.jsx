@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, TrendingUp, Clock, ArrowRight } from 'lucide-react';
+import { Bell, TrendingUp,TrendingDown, Clock, ArrowRight } from 'lucide-react';
 import { fetchSignalsApi } from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
 
@@ -12,7 +12,20 @@ const DashboardHeader = () => {
     const loadHeaderSignals = async () => {
       try {
         const data = await fetchSignalsApi(token);
-        setSignals(data || []);
+        
+        // Get today's date boundaries in UTC (or local timezone)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // Filter for PENDING signals created today
+        const todayPendingSignals = (data || []).filter((signal) => {
+          const isPending = signal.status?.toUpperCase() === 'PENDING';
+          const signalDate = new Date(signal.created_at);
+          const isToday = signalDate >= today;
+          return isPending && isToday;
+        });
+
+        setSignals(todayPendingSignals);
       } catch (err) {
         console.error('Failed to load header signals:', err);
       }
@@ -23,24 +36,11 @@ const DashboardHeader = () => {
   return (
     <header className="flex flex-col lg:flex-row items-center justify-between bg-slate-900 border-b border-slate-800 px-6 py-3 gap-4 relative">
       
-      {/* Left: Date Display */}
-      {/* <div className="text-sm text-slate-400 font-medium flex items-center space-x-2 shrink-0">
-        <Clock className="w-4 h-4 text-orange-400" />
-        <span>
-          {new Date().toLocaleDateString(undefined, {
-            weekday: 'short',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })}
-        </span>
-      </div> */}
-
       {/* Center: Live Signals Marquee Ticker */}
-      <div className=" w-80 md:w-full mx-auto  lg:max-w-xl overflow-hidden bg-slate-950 border border-slate-800/80 rounded-lg py-1.5 px-3 flex items-center relative shadow-inner">
-        <div className="flex items-center space-x-2 mr-3 shrink-0 text-orange-400 text-xs font-bold uppercase tracking-wider border-r border-slate-800 pr-3">
-          <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
-          <span>Live:</span>
+      <div className="w-80 md:w-full mx-auto lg:max-w-xl overflow-hidden bg-slate-950 border border-slate-800/80 rounded-lg py-1.5 px-3 flex items-center relative shadow-inner">
+        <div className="flex items-center space-x-2 mr-3 shrink-0 text-green-400 text-xs font-bold uppercase tracking-wider border-r border-slate-800 pr-3">
+          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+          <span>LIVE:</span>
         </div>
         
         {/* Marquee Container */}
@@ -54,7 +54,7 @@ const DashboardHeader = () => {
                 </span>
               ))
             ) : (
-              <span className="text-xs text-slate-500">loading to market feed...</span>
+              <span className="text-xs text-slate-500">No pending signals for today...</span>
             )}
           </div>
         </div>
@@ -80,7 +80,7 @@ const DashboardHeader = () => {
           <div className="absolute right-0 mt-3 w-80 bg-slate-900 border border-slate-800 rounded-lg shadow-2xl z-50 overflow-hidden text-left">
             <div className="px-4 py-3 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                Recent Signals ({signals.length})
+                PENDING ({signals.length})
               </span>
             </div>
 
@@ -88,16 +88,20 @@ const DashboardHeader = () => {
               {signals.length > 0 ? (
                 signals.slice(0, 5).map((signal) => (
                   <div key={signal.id} className="p-3 hover:bg-slate-800/40 transition-colors flex items-start space-x-3">
-                    <div className="p-2 rounded bg-orange-500/10 text-orange-400 mt-0.5">
+                    <div className={ signal.direction === 'BULLISH' ? `p-2 rounded  bg-green-500/10 text-green-400 mt-0.5` : `p-2 rounded  bg-red-500/10 text-red-400 mt-0.5` }>
+                    {signal.direction === 'BULLISH' ? (
                       <TrendingUp className="w-4 h-4" />
+                    ) : (
+                      <TrendingDown className="w-4 h-4" />
+                    )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <p className="text-xs font-bold text-slate-200">{signal.pair} <span className="text-orange-400">{signal.direction === 'BULLISH' ? 'BUY' : 'SELL'}</span></p>
                       </div>
-                      <div className="flex items-center justify-between mt-1">
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">
-                          Status: {signal.status}
+                      <div className="flex items-center justify-between mt-1">  
+                        <span className="text-[10px] text-slate-500">
+                          {new Date(signal.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
                     </div>
@@ -105,7 +109,7 @@ const DashboardHeader = () => {
                 ))
               ) : (
                 <div className="p-6 text-center text-xs text-slate-500">
-                  No signals available right now.
+                  No pending signals for today.
                 </div>
               )}
             </div>

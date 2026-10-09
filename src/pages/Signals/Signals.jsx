@@ -7,7 +7,9 @@ import {
   ChevronRight, 
   ShieldAlert,
   Loader2,
-  Target
+  CheckCircle2,
+  XCircle,
+  ShieldCheck
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { fetchSignalsApi } from '../../services/api';
@@ -57,6 +59,40 @@ export default function Signals() {
     const start = (currentPage - 1) * itemsPerPage;
     return filteredSignals.slice(start, start + itemsPerPage);
   }, [filteredSignals, currentPage]);
+
+  // Helper to render outcome badge
+  const renderOutcomeBadge = (signal) => {
+    if (signal.status !== 'COMPLETED') return null;
+
+    const outcome = signal.outcome || 'CLOSED';
+    const pips = signal.pips_gained;
+
+    if (outcome === 'TP') {
+      return (
+        <span className="text-[10px] text-emerald-400 font-mono font-semibold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 inline-flex items-center gap-1 mt-1">
+          <CheckCircle2 className="w-3 h-3" /> TP Hit {pips ? `(+${pips}p)` : ''}
+        </span>
+      );
+    } else if (outcome === 'SL') {
+      return (
+        <span className="text-[10px] text-rose-400 font-mono font-semibold bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20 inline-flex items-center gap-1 mt-1">
+          <XCircle className="w-3 h-3" /> SL Hit {pips ? `(${pips}p)` : ''}
+        </span>
+      );
+    } else if (outcome === 'BE') {
+      return (
+        <span className="text-[10px] text-cyan-400 font-mono font-semibold bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20 inline-flex items-center gap-1 mt-1">
+          <ShieldCheck className="w-3 h-3" /> Break-Even
+        </span>
+      );
+    } else {
+      return (
+        <span className="text-[10px] text-slate-400 font-mono font-semibold bg-slate-800 px-2 py-0.5 rounded border border-slate-700 inline-block mt-1">
+          Outcome: {outcome}
+        </span>
+      );
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-100">
@@ -140,11 +176,7 @@ export default function Signals() {
                       </div>
                       <div>
                         <h4 className="font-bold text-slate-100 text-sm tracking-wide">{signal.pair}</h4>
-                        {signal.risk_reward && (
-                          <span className="text-[10px] text-orange-400 font-mono font-semibold bg-orange-500/10 px-2 py-0.5 rounded border border-orange-500/20 inline-block mt-1">
-                            RR: {signal.risk_reward}
-                          </span>
-                        )}
+                        {renderOutcomeBadge(signal)}
                       </div>
                     </div>
 
@@ -173,7 +205,7 @@ export default function Signals() {
                       <span className={`text-xs px-2.5 py-1 rounded-full font-medium uppercase ${
                         signal.status === 'PENDING' 
                           ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse'
-                          : signal.status === 'ACTIVE'
+                          : signal.status === 'TRIGGERED'
                           ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
                           : signal.status === 'COMPLETED'
                           ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'

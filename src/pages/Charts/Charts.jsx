@@ -2,11 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { BarChart2, Globe } from 'lucide-react';
 
 const SYMBOLS = [
-  { label: 'Gold (XAU/USD)', value: 'OANDA:XAUUSD' },
+  { label: 'XAU/USD', value: 'OANDA:XAUUSD' },
   { label: 'EUR/USD', value: 'FX:EURUSD' },
   { label: 'GBP/USD', value: 'FX:GBPUSD' },
-  { label: 'Bitcoin (BTC/USD)', value: 'BINANCE:BTCUSDT' },
-  { label: 'US 30 (Dow Jones)', value: 'CAPITALCOM:US30' },
+  { label: 'AUD/USD', value: 'FX:AUDUSD' },
+  { label: 'NZD/USD', value: 'FX:NZDUSD' },
+  { label: 'USDCAD', value: 'FX:USDCAD' },
+  { label: 'US30', value: 'CAPITALCOM:US30' },
   { label: 'USD/JPY', value: 'FX:USDJPY' }
 ];
 
@@ -56,9 +58,9 @@ function Charts() {
         <div className="p-4 space-y-6 max-w-7xl w-full mx-auto text-left">
           
           {/* Header & Symbol Selector Toolbar */}
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 p-4 rounded-2xl shadow-xl">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 p-4 rounded-md shadow-xl">
             <div className="flex items-center space-x-3">
-              <div className="p-2.5 rounded-xl bg-orange-500/10 text-orange-400 border border-orange-500/20">
+              <div className="p-2.5 rounded-md bg-orange-500/10 text-orange-400 border border-orange-500/20">
                 <BarChart2 className="w-5 h-5" />
               </div>
               <div>
@@ -73,7 +75,7 @@ function Charts() {
                 <button
                   key={item.value}
                   onClick={() => setSelectedSymbol(item.value)}
-                  className={`px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                  className={`px-3 py-2 rounded-md text-xs font-semibold whitespace-nowrap transition-all ${
                     selectedSymbol === item.value
                       ? 'bg-orange-500 text-slate-950 shadow-md shadow-orange-500/20'
                       : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200'
@@ -86,7 +88,7 @@ function Charts() {
           </div>
 
           {/* Chart Wrapper Container */}
-          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl h-[700px] relative">
+          <div className="bg-slate-900/80 border border-slate-800 rounded-md overflow-hidden shadow-2xl h-[700px] relative">
             <div id="tradingview_widget_container" ref={containerRef} className="w-full h-full" />
           </div>
 
