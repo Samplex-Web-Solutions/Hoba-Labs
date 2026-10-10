@@ -50,7 +50,7 @@ export const linkTelegramApi = async ({ telegramId, username, phone, password })
     body: JSON.stringify({ 
       telegram_id: telegramId, 
       username, 
-      loginIdentifier: phone, // Mapped to match backend expectation
+      loginIdentifier: phone,
       password 
     }),
   });
@@ -83,17 +83,6 @@ export async function initializeSubscriptionPaymentApi(planKey) {
   return data;
 }
 
-export const fetchTodayCalendar = async () => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/calendar/today`);
-    const data = await response.json();
-    return data;
-  } catch (err) {
-    console.error('[API_ERROR] Failed to fetch today\'s calendar:', err.message);
-    return { success: false, data: [] };
-  }
-}
-
 export async function verifySubscriptionPaymentApi(reference) {
   const response = await fetch(`${API_BASE_URL}/subscription/verify/${reference}`, {
     method: 'GET',
@@ -103,6 +92,31 @@ export async function verifySubscriptionPaymentApi(reference) {
   const data = await response.json();
   if (!response.ok) throw new Error(data.message || 'Failed to verify transaction');
   return data;
+}
+
+/**
+ * Fetches the user's subscription payment history ledger
+ */
+export async function fetchSubscriptionHistoryApi() {
+  const response = await fetch(`${API_BASE_URL}/subscription/history`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json', ...authHeader() },
+  });
+
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'Failed to fetch subscription history');
+  return data;
+}
+
+export const fetchTodayCalendar = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/calendar/today`);
+    const data = await response.json();
+    return data;
+  } catch (err) {
+    console.error('[API_ERROR] Failed to fetch today\'s calendar:', err.message);
+    return { success: false, data: [] };
+  }
 }
 
 export const fetchSignalsApi = async (token) => {
@@ -117,9 +131,7 @@ export const fetchSignalsApi = async (token) => {
   const data = await response.json();
 
   if (!response.ok) {
-    // Check if the backend blocked the request due to an expired subscription
     if (response.status === 403) {
-      // You can throw a specific error type or object so your component knows to redirect
       const error = new Error(data.message || 'Subscription expired');
       error.isSubscriptionExpired = true;
       throw error;

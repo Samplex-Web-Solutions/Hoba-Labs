@@ -10,6 +10,7 @@ import News from '../pages/News/News';
 import Settings from '../pages/Settings/Settings';
 import Affiliate from '../pages/Affiliate/Affiliate';
 import Charts from '../pages/Charts/Charts';
+import History from '../pages/History/History';
 import LinkTelegram from '../pages/LinkTelegram';
 import { useAuthStore } from '../store/authStore';
 import DashboardLayout from '../components/layout/DashboardLayout';
@@ -52,6 +53,7 @@ export default function AppRoutes() {
         <Route path="/affiliate" element={<ProtectedRoute><Affiliate /></ProtectedRoute>} />
         <Route path="/signals" element={<ProtectedRoute><Signals /></ProtectedRoute>} />
         <Route path="/news" element={<ProtectedRoute><News/></ProtectedRoute>} />
+        <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       </Route>
 

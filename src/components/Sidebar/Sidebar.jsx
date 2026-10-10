@@ -27,6 +27,7 @@ const Sidebar = ({ onOpenSubscriptionModal, isMobileOpen, onCloseMobile }) => {
     { name: 'Signals', path: '/signals', icon: Bell },
     { name: 'News Calendar', path: '/news', icon: Newspaper },
     { name: 'Affiliate', path: '/affiliate', icon: UserPlus },
+    { name: 'History', path: '/history', icon: History },
     { name: 'Settings', path: '/settings', icon: Settings },
   ];
 
