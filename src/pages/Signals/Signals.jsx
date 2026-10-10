@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import SubscriptionModal from '../../components/common/SubcriptionModal';
-import { 
-  Search, 
-  Clock, 
-  ChevronLeft, 
-  ChevronRight, 
+import {
+  Search,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
   ShieldAlert,
   Loader2,
   CheckCircle2,
@@ -17,7 +17,7 @@ import { fetchSignalsApi } from '../../services/api';
 export default function Signals() {
   const { token } = useAuthStore();
   const [isSubModalOpen, setIsSubModalOpen] = useState(false);
-  
+
   const [signals, setSignals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
@@ -103,7 +103,7 @@ export default function Signals() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 p-4 rounded-2xl">
             <div className="relative w-full md:w-80">
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
-              <input 
+              <input
                 type="text"
                 placeholder="Search pair (e.g. XAUUSD)..."
                 value={searchQuery}
@@ -123,11 +123,10 @@ export default function Signals() {
                     setDirectionFilter(filter);
                     setCurrentPage(1);
                   }}
-                  className={`flex-1 md:flex-initial px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                    directionFilter === filter
+                  className={`flex-1 md:flex-initial px-4 py-2 rounded-xl text-xs font-bold transition-all ${directionFilter === filter
                       ? 'bg-orange-500 text-slate-950 shadow-md shadow-orange-500/20'
                       : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200'
-                  }`}
+                    }`}
                 >
                   {filter}
                 </button>
@@ -152,8 +151,35 @@ export default function Signals() {
                 <p className="text-xs font-mono">Fetching latest market signals & pips...</p>
               </div>
             ) : errorMsg ? (
-              <div className="p-12 text-center text-red-400 font-mono text-xs">
-                {errorMsg}
+              <div className="flex flex-col items-center justify-center p-8 my-6 rounded-2xl bg-zinc-900/80 border border-red-500/30 backdrop-blur-md shadow-2xl shadow-red-950/20 max-w-md mx-auto animate-fade-in">
+                {/* Icon Container with subtle pulse */}
+                <div className="relative flex items-center justify-center w-12 h-12 mb-4 rounded-full bg-red-500/10 border border-red-500/20 text-red-400">
+                  <div className="absolute inset-0 rounded-full bg-red-500/20 animate-ping opacity-25"></div>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-6 h-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
+                  </svg>
+                </div>
+
+                {/* Error Heading */}
+                <h4 className="mb-1 text-sm font-semibold tracking-wider text-red-400 uppercase font-mono">
+                  System Alert
+                </h4>
+
+                {/* Dynamic Error Message */}
+                <p className="text-xs text-center text-zinc-400 font-mono leading-relaxed">
+                  {errorMsg || 'An unexpected error occurred. Please try again.'}
+                </p>
               </div>
             ) : paginatedSignals.length === 0 ? (
               <div className="p-12 text-center text-slate-500">
@@ -164,14 +190,13 @@ export default function Signals() {
               <div className="divide-y-2 divide-slate-800">
                 {paginatedSignals.map((signal) => (
                   <div key={signal.id} className="p-5 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 hover:bg-slate-800/30 transition-colors">
-                    
+
                     {/* Direction & Asset */}
                     <div className="flex items-center space-x-4">
-                      <div className={`p-3 rounded-xl justify-center font-black text-xs flex items-center w-24 ${
-                        signal.direction === 'BULLISH' 
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                      <div className={`p-3 rounded-xl justify-center font-black text-xs flex items-center w-24 ${signal.direction === 'BULLISH'
+                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                           : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                      }`}>
+                        }`}>
                         {signal.direction === 'BULLISH' ? '🟢 BUY' : '🔴 SELL'}
                       </div>
                       <div>
@@ -202,15 +227,14 @@ export default function Signals() {
 
                     {/* Status & Timestamp */}
                     <div className="flex items-center justify-between w-full lg:w-auto space-x-4 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-800">
-                      <span className={`text-xs px-2.5 py-1 rounded-full font-medium uppercase ${
-                        signal.status === 'PENDING' 
+                      <span className={`text-xs px-2.5 py-1 rounded-full font-medium uppercase ${signal.status === 'PENDING'
                           ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse'
                           : signal.status === 'TRIGGERED'
-                          ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-                          : signal.status === 'COMPLETED'
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                          : 'bg-slate-800 text-slate-400'
-                      }`}>
+                            ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                            : signal.status === 'COMPLETED'
+                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                              : 'bg-slate-800 text-slate-400'
+                        }`}>
                         {signal.status}
                       </span>
                       <span className="text-xs text-slate-500 flex items-center gap-1 font-mono">
@@ -256,9 +280,9 @@ export default function Signals() {
         </div>
       </main>
 
-      <SubscriptionModal 
-        isOpen={isSubModalOpen} 
-        onClose={() => setIsSubModalOpen(false)} 
+      <SubscriptionModal
+        isOpen={isSubModalOpen}
+        onClose={() => setIsSubModalOpen(false)}
       />
     </div>
   );
