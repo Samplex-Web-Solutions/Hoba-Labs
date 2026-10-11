@@ -104,7 +104,7 @@ const History = () => {
                     </span>
                   </td>
                   <td className="px-5 py-4 text-slate-400">
-                   {new Date(item.period_end).toLocaleDateString()} ➔ {new Date(item.period_start).toLocaleDateString()} 
+                    {new Date(item.period_start).toLocaleDateString()} ➔ {new Date(item.period_end).toLocaleDateString()}
                   </td>
                   <td className="px-5 py-4 text-slate-400 font-mono text-[11px] truncate max-w-[140px]" title={item.reference}>
                     {item.reference || 'N/A'}
