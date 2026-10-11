@@ -11,6 +11,8 @@ import Settings from '../pages/Settings/Settings';
 import Affiliate from '../pages/Affiliate/Affiliate';
 import Charts from '../pages/Charts/Charts';
 import History from '../pages/History/History';
+import Contact from '../pages/Contact/Contact';
+import Home from '../pages/Home/Home';
 import LinkTelegram from '../pages/LinkTelegram';
 import { useAuthStore } from '../store/authStore';
 import DashboardLayout from '../components/layout/DashboardLayout';
@@ -20,15 +22,16 @@ export default function AppRoutes() {
 
   return (
     <Routes>
-      {/* Smart Root Redirect */}
+      {/* Root Route: Shows Home for guests, redirects to Dashboard if logged in */}
       <Route
         path="/"
-        element={user ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />}
+        element={user ? <Navigate to="/dashboard" replace /> : <Home />}
       />
 
       {/* Public Auth & Linking Routes */}
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/contact" element={<Contact />} />
       <Route path="/link-telegram" element={<LinkTelegram />} />
 
       {/* Onboarding Flow: Requires login, but ensures onboarding_completed is false */}
@@ -60,7 +63,7 @@ export default function AppRoutes() {
       {/* Smart Fallback Catch-All */}
       <Route
         path="*"
-        element={user ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />}
+        element={user ? <Navigate to="/dashboard" replace /> : <Navigate to="/" replace />}
       />
     </Routes>
   );
