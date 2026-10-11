@@ -40,7 +40,7 @@ function Login() {
           email: response.user.email,
           phone: response.user.phone,
           referralCode: response.user.referralCode,
-          subscription: response.user.subscriptionPlan,
+          subscription: response.user.subscription,
           onboarding_completed: response.user.onboarding_completed,
         },
         response.token

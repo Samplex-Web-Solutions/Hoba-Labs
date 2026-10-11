@@ -96,7 +96,7 @@ const History = () => {
                     {item.plan_key}
                   </td>
                   <td className="px-5 py-4 text-[#10b981] font-bold text-sm">
-                    ${Number(item.amount).toFixed(2)}
+                    ₦{Number(item.amount).toLocaleString()}
                   </td>
                   <td className="px-5 py-4">
                     <span className="px-2.5 py-1 rounded-md text-[10px] uppercase font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
@@ -104,7 +104,7 @@ const History = () => {
                     </span>
                   </td>
                   <td className="px-5 py-4 text-slate-400">
-                    {new Date(item.period_start).toLocaleDateString()} ➔ {new Date(item.period_end).toLocaleDateString()}
+                   {new Date(item.period_end).toLocaleDateString()} ➔ {new Date(item.period_start).toLocaleDateString()} 
                   </td>
                   <td className="px-5 py-4 text-slate-400 font-mono text-[11px] truncate max-w-[140px]" title={item.reference}>
                     {item.reference || 'N/A'}

@@ -17,7 +17,7 @@ import {
 import { useAuthStore } from '../../store/authStore';
 import Logo from '../../assets/images/hoba-labs-logo-horizontal.png';
 
-const Sidebar = ({ onOpenSubscriptionModal, isMobileOpen, onCloseMobile }) => {
+const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
 
@@ -36,10 +36,6 @@ const Sidebar = ({ onOpenSubscriptionModal, isMobileOpen, onCloseMobile }) => {
     navigate('/login');
   };
 
-  // Determine subscription display status
-  const subStatus = (user?.subscription);
-  const isPaid = subStatus === 'active' || subStatus === 'monthly' || subStatus === 'annual';
-  const planDisplay = isPaid ? (user?.subscription || 'Pro Plan') : 'Free Trial';
 
   return (
     <>
@@ -96,27 +92,7 @@ const Sidebar = ({ onOpenSubscriptionModal, isMobileOpen, onCloseMobile }) => {
           })}
         </nav>
 
-        {isPaid ? ''
-         : <div className="p-4 mx-4 mb-4 rounded-md bg-slate-950 border border-slate-800">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Plan Status
-            </span>
-            <Crown className="w-4 h-4 text-orange-400" />
-          </div>
-          <div className="text-sm font-medium text-slate-200 mb-3 capitalize">
-            {planDisplay}
-          </div>
-          <button
-            onClick={() => {
-              onOpenSubscriptionModal?.();
-              onCloseMobile?.();
-            }}
-            className="w-full py-2 px-3 bg-orange-500 hover:bg-orange-600 text-slate-950 font-semibold rounded-lg text-xs transition-colors shadow-lg shadow-orange-500/10"
-          >
-            {isPaid ? 'Manage Subscription' : 'Upgrade'}
-          </button>
-        </div>}
+       
 
         {/* User Footer / Logout */}
         <div className="p-4 mb-12 md:mb-2 border-t border-slate-800 flex items-center justify-between">

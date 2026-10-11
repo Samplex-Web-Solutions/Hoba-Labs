@@ -13,31 +13,35 @@ const Settings = () => {
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [loadingPassword, setLoadingPassword] = useState(false);
 
-  // Profile Form State
   const [profileData, setProfileData] = useState({
     firstName: user?.firstName || user?.first_name || '',
     lastName: user?.lastName || user?.last_name || '',
     phone: user?.phone || '',
   });
 
-  // Password Form State
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   });
 
-  // Notification Preferences State
   const [notifications, setNotifications] = useState({
     emailSignals: true,
     telegramAlerts: true,
     marketingEmails: false,
   });
 
-  // Determine subscription display status
-  const subStatus = (user?.subscription).toLowerCase();
+  // Parse subscription object details safely
+  const sub = user?.subscription || {};
+  const subStatus = sub.status || 'inactive';
   const isPaid = subStatus === 'active' || subStatus === 'monthly' || subStatus === 'annual';
-  const planDisplay = isPaid ? (user?.subscription || 'Pro Plan') : 'Free Trial';
+  const isTrialing = subStatus === 'trialing';
+
+  const planDisplay = isPaid 
+    ? (sub.planType || 'Pro Plan') 
+    : isTrialing 
+    ? `Free Trial (${sub.remainingDays ?? 3} days remaining)` 
+    : 'Free Tier';
 
   const handleProfileChange = (e) => {
     setProfileData({ ...profileData, [e.target.name]: e.target.value });
@@ -51,7 +55,6 @@ const Settings = () => {
     e.preventDefault();
     setLoadingProfile(true);
     try {
-      // Simulate API call to update profile
       await new Promise((resolve) => setTimeout(resolve, 1000));
       toast.success('Profile details updated successfully!');
     } catch (err) {
@@ -74,7 +77,6 @@ const Settings = () => {
 
     setLoadingPassword(true);
     try {
-      // Simulate API call to update password
       await new Promise((resolve) => setTimeout(resolve, 1000));
       toast.success('Password changed successfully!');
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
@@ -89,7 +91,6 @@ const Settings = () => {
     <div className="flex min-h-screen bg-slate-950 text-slate-100">
       <main className="flex-1 flex flex-col min-w-0 overflow-y-auto p-4 md:p-2 max-w-5xl mx-auto">
         
-        {/* Header */}
         <div className="mb-8 border-b border-slate-800 pb-4">
           <h1 className="text-2xl font-bold tracking-tight text-slate-100">Account Settings</h1>
           <p className="text-slate-400 text-sm mt-1">Manage your profile, security preferences, and subscription plan.</p>
@@ -105,29 +106,31 @@ const Settings = () => {
                 <span>Subscription</span>
               </div>
               <span className={`text-xs px-2.5 py-1 rounded-full font-medium capitalize ${
-                isPaid 
+                isPaid || isTrialing
                   ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
                   : 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
               }`}>
-                {isPaid ? 'Active Plan' : 'Free Trial'}
+                {isPaid ? 'Active Plan' : isTrialing ? 'Trialing' : 'Inactive'}
               </span>
             </div>
 
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
                 <p className="text-sm text-slate-300 font-medium">
-                  Current Plan: <span className="text-orange-400 font-bold capitalize">{planDisplay}</span>
+                  Current Status: <span className="text-orange-400 font-bold capitalize">{planDisplay}</span>
                 </p>
                 <p className="text-xs text-slate-500 mt-1">
-                  Enjoying automated Smart Money signals and 24/7 Telegram bot access.
+                  {isTrialing 
+                    ? `Your trial period ends on ${new Date(sub.trialEndsAt).toLocaleDateString()}. Upgrade to avoid interruption.`
+                    : 'Enjoying automated Smart Money signals and 24/7 Telegram bot access.'}
                 </p>
               </div>
-             {isPaid ? "" :  <button
+              <button
                 onClick={() => setIsSubModalOpen(true)}
                 className="bg-orange-500 hover:bg-orange-600 text-slate-950 font-bold px-4 py-2.5 rounded-md text-xs transition-colors shadow-lg shadow-orange-500/10"
               >
-                {isPaid ? 'Manage Subscription' : 'Upgrade / Renew Plan'}
-              </button>}
+                {isPaid ? 'Manage Subscription' : 'Upgrade Plan'}
+              </button>
             </div>
           </div>
 
@@ -283,7 +286,6 @@ const Settings = () => {
         </div>
       </main>
 
-      {/* Subscription Modal Integration */}
       <SubscriptionModal
         isOpen={isSubModalOpen}
         onClose={() => setIsSubModalOpen(false)}

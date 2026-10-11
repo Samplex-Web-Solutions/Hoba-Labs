@@ -16,7 +16,7 @@ export const useAuthStore = create(
       // Explicitly saving both user and token
       login: (user, token) => set({ user, token, isAuthenticated: !!user }),
 
-      setSubscription: (subscription) => set({ subscription }),
+      // setSubscription: (subscription) => set({ subscription }),
       setLoadingAuth: (isLoadingAuth) => set({ isLoadingAuth }),
 
       completeOnboarding: () => set((state) => ({
@@ -32,7 +32,7 @@ export const useAuthStore = create(
         user: state.user,
         token: state.token, // <--- Ensure this is explicitly included
         isAuthenticated: state.isAuthenticated,
-        subscription: state.subscription,
+        // subscription: state.subscription,
       }),
     }
   )

@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { showToast } from '../../utils/toast.js';
 
-const Dashboard = () => {
+const Dashboard = ({ onOpenSubscriptionModal }) => {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -21,13 +21,22 @@ const Dashboard = () => {
   const [copied, setCopied] = useState(false);
   const [botcopied, setBotCopied] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+
+  // Safely extract subscription object properties
+  const sub = user?.subscription || {};
+  const subStatus = sub.status || 'inactive';
+  const isPaid = subStatus === 'active' || subStatus === 'monthly' || subStatus === 'annual';
+  const isTrialing = subStatus === 'trialing';
   
-  const frontendUrl = import.meta.env.VITE_FRONTEND_URL;
-  const referralCode = user?.referralCode;
-const referralLink = `${import.meta.env.VITE_FRONTEND_URL}/register?ref=${user?.referralCode}`;
+  const planDisplay = isPaid 
+    ? (sub.planType || 'Pro Plan') 
+    : isTrialing 
+    ? `Free Trial (${sub.remainingDays ?? 3} days left)` 
+    : 'Free Tier';
+
+  const referralLink = `${import.meta.env.VITE_FRONTEND_URL}/register?ref=${user?.referralCode}`;
   const bot_url = import.meta.env.VITE_BOT_URL;
 
-  // Automatically catch and verify payment when Paystack redirects back
   useEffect(() => {
     const paymentStatus = searchParams.get('payment');
     const reference = searchParams.get('reference');
@@ -39,7 +48,7 @@ const referralLink = `${import.meta.env.VITE_FRONTEND_URL}/register?ref=${user?.
           if (data.success) {
             showToast.success('Subscription verified and activated successfully!');
             setSearchParams({});
-            window.location.reload(); // Refresh to pull latest user subscription state
+            window.location.reload();
           }
         } catch (err) {
           console.error('Verification error:', err);
@@ -67,28 +76,21 @@ const referralLink = `${import.meta.env.VITE_FRONTEND_URL}/register?ref=${user?.
 
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-100">
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-y-auto p-4 md:p-4">
+      <main className="flex-1 flex flex-col min-w-0 overflow-y-auto p-4 md:px-4 md:py-2">
 
-        {/* Top Navigation / Header Bar with Marquee & Date */}
         <header className="flex flex-col xl:flex-row items-center justify-between bg-slate-900 border border-slate-800 rounded-md p-5 mb-8 shadow-xl gap-4">
-          
-          {/* Welcome Text */}
           <div className="w-full xl:w-auto text-left">
             <h1 className="text-2xl font-bold tracking-tight">
               Welcome back, {user?.firstName || user?.first_name || 'Trader'}!
             </h1>
           </div>
-
-          {/* Marquee Ticker Container */}
           <DashboardHeader />
         </header>
 
-        {/* Main Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           {/* Left Column: User Profile Card */}
-          <div className="bg-slate-900 border border-slate-800 rounded-md p-6 shadow-lg flex flex-col justify-between">
+          <div className="bg-slate-900 border border-slate-800 rounded-md px-6 py-4 shadow-lg flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-800">
                 <h2 className="text-lg font-semibold flex items-center gap-2 text-orange-500">
@@ -116,8 +118,17 @@ const referralLink = `${import.meta.env.VITE_FRONTEND_URL}/register?ref=${user?.
                 <div>
                   <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Subscription Status</span>
                   <p className="text-base font-medium text-orange-400 mt-0.5 capitalize">
-                    {user?.subscription === 'monthly' || user?.subscription === 'annual' ? user?.subscription : 'Free Trial'}
+                    {planDisplay}
                   </p>
+
+                  <div className="mt-4 rounded-md">
+                    <button
+                      onClick={() => setIsSubModalOpen(true)}
+                      className="w-full py-2 px-3 bg-orange-500 hover:bg-orange-600 text-slate-950 font-semibold rounded-lg text-xs transition-colors shadow-lg shadow-orange-500/10"
+                    >
+                      {isPaid ? 'Manage Subscription' : 'Upgrade Plan'}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -126,7 +137,6 @@ const referralLink = `${import.meta.env.VITE_FRONTEND_URL}/register?ref=${user?.
           {/* Right 2 Columns: Quick Stats & Referral Banner */}
           <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
 
-            {/* Stat Card 1 */}
             <div className="bg-slate-900 border border-slate-800 rounded-md p-6 shadow-lg relative overflow-hidden group hover:border-orange-500/40 transition-colors text-left">
               <div className="flex justify-between items-start mb-4">
                 <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-md text-orange-500">
@@ -137,10 +147,9 @@ const referralLink = `${import.meta.env.VITE_FRONTEND_URL}/register?ref=${user?.
                 </span>
               </div>
               <h3 className="text-slate-400 text-sm font-medium">Telegram Bot Status</h3>
-              <p className="text-2xl font-bold text-slate-100 mt-1">{`24/7`}</p>
+              <p className="text-2xl font-bold text-slate-100 mt-1">24/7</p>
             </div>
 
-            {/* Stat Card 2 */}
             <div className="bg-slate-900 border border-slate-800 rounded-md p-6 shadow-lg relative overflow-hidden group hover:border-orange-500/40 transition-colors text-left">
               <div className="flex justify-between items-start mb-4">
                 <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-md text-blue-400">
@@ -149,13 +158,12 @@ const referralLink = `${import.meta.env.VITE_FRONTEND_URL}/register?ref=${user?.
                 <span className="text-blue-400 text-xs bg-blue-500/10 px-2 py-0.5 rounded">Live Signals</span>
               </div>
               <h3 className="text-slate-400 text-sm font-medium">Active Strategy</h3>
-              <p className="text-2xl font-bold text-slate-100 mt-1">Smart Money</p>
+              <p className="text-2xl font-bold text-slate-100 mt-1">HOBA LABS ENGINE</p>
               <Link to="/signals">
                 <p className="text-xs text-slate-500 mt-2 hover:text-orange-400 transition-colors">View Signals History</p>
               </Link>
             </div>
 
-            {/* Referral Banner Card */}
             <div className="sm:col-span-2 bg-gradient-to-r from-orange-950/40 via-slate-900 to-slate-900 border border-orange-500/20 rounded-md p-6 shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="text-left">
                 <h3 className="text-lg font-semibold text-orange-400 flex items-center gap-2">
@@ -185,6 +193,7 @@ const referralLink = `${import.meta.env.VITE_FRONTEND_URL}/register?ref=${user?.
           </div>
         </div>
 
+        {/* Telegram Notification Bot Link Section */}
         <div className="md:mt-6">
           <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-orange-950/40 border border-orange-500/20 rounded-md p-6 shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="text-left">
@@ -218,7 +227,6 @@ const referralLink = `${import.meta.env.VITE_FRONTEND_URL}/register?ref=${user?.
 
       </main>
 
-      {/* Subscription Modal Integration */}
       <SubscriptionModal
         isOpen={isSubModalOpen}
         onClose={() => setIsSubModalOpen(false)}
