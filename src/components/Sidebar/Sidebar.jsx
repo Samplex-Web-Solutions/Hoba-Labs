@@ -95,7 +95,7 @@ const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
        
 
         {/* User Footer / Logout */}
-        <div className="p-4 mb-12 md:mb-2 border-t border-slate-800 flex items-center justify-between">
+        <div className="p-4 mb-16 md:mb-2 border-t border-slate-800 flex items-center justify-between">
           <button
             onClick={handleLogout}
             className="text-slate-400 group w-full hover:text-red-400 p-3 flex gap-2 rounded-md hover:bg-red-900/30 transition-colors"
