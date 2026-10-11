@@ -37,7 +37,7 @@ const Sidebar = ({ onOpenSubscriptionModal, isMobileOpen, onCloseMobile }) => {
   };
 
   // Determine subscription display status
-  const subStatus = (user?.subscription).toLowerCase();
+  const subStatus = (user?.subscription);
   const isPaid = subStatus === 'active' || subStatus === 'monthly' || subStatus === 'annual';
   const planDisplay = isPaid ? (user?.subscription || 'Pro Plan') : 'Free Trial';
 
