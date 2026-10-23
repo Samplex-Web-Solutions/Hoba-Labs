@@ -16,6 +16,7 @@ import Home from '../pages/Home/Home';
 import LinkTelegram from '../pages/LinkTelegram';
 import { useAuthStore } from '../store/authStore';
 import DashboardLayout from '../components/layout/DashboardLayout';
+import EABridgeSettings from '../pages/EA/EASettings';
 
 export default function AppRoutes() {
   const { user, completeOnboarding } = useAuthStore();
@@ -55,6 +56,7 @@ export default function AppRoutes() {
         <Route path="/charts" element={<ProtectedRoute requireOnboarding={true}><Charts /></ProtectedRoute>} />
         <Route path="/affiliate" element={<ProtectedRoute><Affiliate /></ProtectedRoute>} />
         <Route path="/signals" element={<ProtectedRoute><Signals /></ProtectedRoute>} />
+        <Route path="/ea" element={<EABridgeSettings />} />
         <Route path="/news" element={<ProtectedRoute><News/></ProtectedRoute>} />
         <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
