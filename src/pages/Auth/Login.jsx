@@ -4,7 +4,6 @@ import { useAuthStore } from '../../store/authStore';
 import { loginApi } from '../../services/api';
 import { Mail, Lock, ShieldCheck, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import logo from '../../assets/images/hoba-labs-logo-horizontal.png';
-import { toast } from 'react-toastify';
 import BarLoader from '../../components/common/BarLoader';
 
 function Login() {

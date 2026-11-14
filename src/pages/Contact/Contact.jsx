@@ -1,7 +1,32 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import emailjs from '@emailjs/browser';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Mail, Phone, MapPin, Send, CheckCircle2, AlertCircle, ArrowLeft } from 'lucide-react';
+import logo from '../../assets/images/hoba-labs-logo-horizontal.png';
+
+
+
+const ease = [0.22, 1, 0.36, 1];
+
+const reveal = {
+  hidden: { opacity: 0, y: 34 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.75, ease },
+  },
+};
+
+const stagger = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.06,
+    },
+  },
+};
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -11,6 +36,7 @@ export default function Contact() {
     message: ''
   });
   const [status, setStatus] = useState({ loading: false, success: false, error: '' });
+  const reduceMotion = useReducedMotion();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -62,62 +88,68 @@ export default function Contact() {
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-orange-500 selection:text-slate-950">
       
       {/* Header */}
-      <header className="px-6 py-5 max-w-7xl mx-auto w-full flex items-center justify-between border-b border-slate-900">
+      <motion.header 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease }}
+        className="px-6 py-5 max-w-7xl mx-auto w-full flex items-center justify-between border-b border-slate-900"
+      >
         <Link to="/" className="flex items-center gap-2 text-xs font-medium text-slate-300 hover:text-orange-400 transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back to Home
         </Link>
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-orange-500/10 border border-orange-500/30 rounded-lg flex items-center justify-center text-orange-400 font-bold">
-            H
-          </div>
-          <span className="font-bold text-white text-sm font-mono">HOBA LABS</span>
+          <div className="text-center space-y-1">
+              <img src={logo} alt="Hoba Labs Logo" className="mx-auto h-16" />
+            </div>
         </div>
-      </header>
+      </motion.header>
 
       {/* Contact Content */}
-      <main className="max-w-5xl mx-auto px-6 py-16 w-full grid grid-cols-1 md:grid-cols-2 gap-12">
+      <motion.main 
+        variants={stagger}
+        initial={reduceMotion ? false : 'hidden'}
+        animate="visible"
+        className="max-w-5xl mx-auto px-6 py-16 w-full grid grid-cols-1 md:grid-cols-2 gap-12"
+      >
         
         {/* Left Info */}
-        <div className="space-y-6 text-left">
+        <motion.div variants={reveal} className="space-y-6 text-left">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-semibold">
             Get in Touch
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-sans font-bold text-white tracking-tight">
             We'd Love to Hear From You
           </h1>
-          <p className="text-slate-400 text-sm leading-relaxed">
-            Have questions about our institutional SMC/ICT signal engine, subscription tiers, or Telegram bot setup? Reach out to our team.
-          </p>
 
           <div className="space-y-4 pt-4 text-xs text-slate-300">
-            <div className="flex items-center gap-3 bg-slate-900 border border-slate-800 p-4 rounded-xl">
+            <motion.div 
+              whileHover={{ x: 4 }}
+              transition={{ duration: 0.2 }}
+              className="flex items-center gap-3 bg-slate-900 border border-slate-800 p-4 rounded-xl"
+            >
               <Phone className="w-5 h-5 text-orange-400" />
               <div>
                 <p className="text-slate-500 text-[10px] uppercase">WhatsApp Support</p>
-                <p className="font-semibold text-white">+234 815 885 7187</p>
+                <p className="font-semibold text-white">+234 813 921 1463</p>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="flex items-center gap-3 bg-slate-900 border border-slate-800 p-4 rounded-xl">
+            <motion.div 
+              whileHover={{ x: 4 }}
+              transition={{ duration: 0.2 }}
+              className="flex items-center gap-3 bg-slate-900 border border-slate-800 p-4 rounded-xl"
+            >
               <Mail className="w-5 h-5 text-orange-400" />
               <div>
                 <p className="text-slate-500 text-[10px] uppercase">Email Support</p>
-                <p className="font-semibold text-white">support@hobalabs.internal</p>
+                <p className="font-semibold text-white">support@hobalabs.com</p>
               </div>
-            </div>
-
-            <div className="flex items-center gap-3 bg-slate-900 border border-slate-800 p-4 rounded-xl">
-              <MapPin className="w-5 h-5 text-orange-400" />
-              <div>
-                <p className="text-slate-500 text-[10px] uppercase">Headquarters</p>
-                <p className="font-semibold text-white">Umuahia, Abia State, Nigeria</p>
-              </div>
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Right Form */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl text-left">
+        <motion.div variants={reveal} className="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl text-left">
           <h2 className="text-lg font-bold text-white mb-6">Send Us a Message</h2>
 
           {status.success && (
@@ -143,8 +175,8 @@ export default function Contact() {
                 value={formData.name}
                 onChange={handleChange}
                 required
-                placeholder="Samuel Ojiemen"
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-orange-500"
+                placeholder="John Doe"
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-orange-500 transition-colors"
               />
             </div>
 
@@ -156,21 +188,8 @@ export default function Contact() {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                placeholder="samuel@hobalabs.internal"
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-orange-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Subject</label>
-              <input 
-                type="text" 
-                name="subject"
-                value={formData.subject}
-                onChange={handleChange}
-                required
-                placeholder="Subscription & Signal Inquiry"
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-orange-500"
+                placeholder="example@gmail.com"
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-orange-500 transition-colors"
               />
             </div>
 
@@ -182,28 +201,35 @@ export default function Contact() {
                 value={formData.message}
                 onChange={handleChange}
                 required
-                placeholder="How can we assist your trading setup today?"
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-orange-500 resize-none"
+                placeholder="How can we assist you today?"
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-orange-500 resize-none transition-colors"
               ></textarea>
             </div>
 
-            <button 
+            <motion.button 
               type="submit" 
               disabled={status.loading}
-              className="w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-slate-950 font-bold py-3 rounded-lg text-xs transition-colors shadow-lg shadow-orange-500/20"
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-slate-950 font-bold py-3 rounded-lg text-xs transition-colors shadow-lg shadow-orange-500/20 cursor-pointer"
             >
               <span>{status.loading ? 'Sending Message...' : 'Send Message'}</span>
               <Send className="w-4 h-4" />
-            </button>
+            </motion.button>
           </form>
-        </div>
+        </motion.div>
 
-      </main>
+      </motion.main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-900 py-6 px-6 text-center text-xs text-slate-500 max-w-7xl mx-auto w-full">
+      <motion.footer 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+        className="border-t border-slate-900 py-6 px-6 text-center text-xs text-slate-500 max-w-7xl mx-auto w-full"
+      >
         © {new Date().getFullYear()} Hoba Labs. All rights reserved.
-      </footer>
+      </motion.footer>
 
     </div>
   );

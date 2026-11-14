@@ -22,6 +22,8 @@ import {
   Zap,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
+import logo from '../../assets/images/hoba-labs-logo-horizontal.png';
+
 
 /*
  * Hoba Labs landing page
@@ -121,9 +123,8 @@ const TradingViewLiveTicker = () => {
 
 const SectionHeading = ({ eyebrow, title, description, align = 'center' }) => (
   <div
-    className={`mx-auto mb-14 max-w-3xl space-y-4 ${
-      align === 'left' ? 'text-left' : 'text-center'
-    }`}
+    className={`mx-auto mb-14 max-w-3xl space-y-4 ${align === 'left' ? 'text-left' : 'text-center'
+      }`}
   >
     <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-orange-400">
       <span className="h-px w-6 bg-orange-500" />
@@ -142,59 +143,62 @@ const SectionHeading = ({ eyebrow, title, description, align = 'center' }) => (
 
 const features = [
   {
-    icon: Cpu,
+    icon: Bot,
     tone: 'orange',
-    title: 'Intelligent Market Analysis',
+    title: 'Real-Time Trading Signals',
     description:
-      'Bring structure to your chart analysis with a multi-timeframe approach built around market structure, liquidity and price action.',
-    tag: 'Market intelligence',
+      'Receive lightning-fast structural signals and instant Telegram alerts for order fills, TP/SL hits, breakeven updates, and canceled invalid trades.',
+    tag: 'Signal delivery',
   },
   {
-    icon: Bot,
+    icon: Zap,
     tone: 'blue',
-    title: 'Real-time Telegram Signals',
+    title: 'EA Automated Trading',
     description:
-      'Stay informed with structured trade alerts and clear entry, stop-loss and take-profit information delivered through Telegram.',
-    tag: 'Signal delivery',
+      'Deploy robust MetaTrader Expert Advisors (EAs) engineered to execute strategies autonomously and manage risk 24/7 without emotional interference.',
+    tag: 'Automation & execution',
   },
   {
     icon: ShieldCheck,
     tone: 'emerald',
-    title: 'Risk-first Trading Tools',
+    title: 'Prop-Safe Risk Management',
     description:
-      'Make more deliberate trading decisions with position-sizing support and risk-management tools built into the workflow.',
+      'Protect your capital with built-in position sizing support, micro-lot calibration, and strict adherence to institutional and prop firm rules.',
     tag: 'Trade management',
-  },
-];
-
-const steps = [
-  {
-    number: '01',
-    title: 'Read the market',
-    description:
-      'Start with the higher timeframe to understand direction, key structure and important price areas.',
-  },
-  {
-    number: '02',
-    title: 'Wait for confirmation',
-    description:
-      'Allow price to correct and look for a lower-timeframe confirmation before considering an entry.',
-  },
-  {
-    number: '03',
-    title: 'Manage the trade',
-    description:
-      'Use clear trade levels and position-sizing information to approach execution with a defined plan.',
   },
 ];
 
 const testimonials = [
   {
     quote:
-      'Precision meets simplicity. The multi-timeframe scanner and Telegram bot alerts save me hours of chart analysis.',
-    initials: 'SO',
-    name: 'Samuel Ojiemen',
-    role: 'Lead Frontend Developer',
+      'The Telegram bot delivers signals ridiculously fast, and the built-in risk calculator makes position sizing effortless. Hoba Labs provides way more value than what it costs.',
+    initials: 'CI',
+    name: 'Caris Imala',
+    role: 'Pro Plan User',
+    tone: 'orange',
+  },
+  {
+    quote:
+      'As a beginner in forex, this bot lets me trade freely without the fear of blowing my account. Hoba Labs made trading simple for me, and I’m currently enjoying steady profits on my live account!',
+    initials: 'AM',
+    name: 'Akinkumi Matthew',
+    role: 'EA Bot Trader',
+    tone: 'orange',
+  },
+  {
+    quote:
+      'Ever since I started using Hoba Labs, my win rate has jumped to 78%! The built-in risk management tools make it completely prop-firm friendly.',
+    initials: 'MO',
+    name: 'Mary Oluwatomilayo',
+    role: 'Pro Plan User',
+    tone: 'orange',
+  },
+  {
+    quote:
+      'Precision meets simplicity. Getting instant alerts for order fills, hit TP and SL, breakeven updates, and canceled invalid trades saves me hours of manual chart monitoring.',
+    initials: 'EO',
+    name: 'Emmanuel Ojiemen',
+    role: 'Pro Plan User',
     tone: 'orange',
   },
   {
@@ -202,7 +206,7 @@ const testimonials = [
       'The risk-management tools help me stay disciplined and pay closer attention to how I manage my trades.',
     initials: 'ON',
     name: 'Okechukwu N.',
-    role: 'Algorithmic Trader',
+    role: 'EA Bot Trader',
     tone: 'blue',
   },
   {
@@ -215,6 +219,29 @@ const testimonials = [
   },
 ];
 
+const faqs = [
+  {
+    question: 'What is Hoba Labs and how does it work?',
+    answer:
+      'Hoba Labs is an institutional forex trading signal platform and EA automated trading ecosystem. It combines multi-timeframe market structure scanning, automated instant Telegram alerts for orders and risk calculations, and user-friendly risk management tools designed to streamline your trading workflow.',
+  },
+  {
+    question: 'How do I receive trading signals and EA updates?',
+    answer:
+      'Signals and instant execution alerts—including order fills, take-profit (TP), stop-loss (SL), breakeven (BE) updates, and canceled invalid trades—are streamed directly to you in real-time through our integrated Telegram bot and your platform dashboard.',
+  },
+  {
+    question: 'Is Hoba Labs friendly for proprietary (prop) firms?',
+    answer:
+      'Yes! Hoba Labs is built with strict risk-management and position-sizing frameworks specifically tailored to respect daily drawdown limits, micro-lot sizing, and consistency metrics required by top prop firms.',
+  },
+  {
+    question: 'How do I subscribe and access the platform?',
+    answer:
+      'You can easily sign up and choose a subscription plan through our platform. We support dual-payment options, including Paystack for fiat currency (NGN) and NOWPayments for cryptocurrency, ensuring instant automated activation upon successful payment.',
+  },
+];
+
 const iconTone = {
   orange: 'border-orange-400/20 bg-orange-400/10 text-orange-300',
   blue: 'border-sky-400/20 bg-sky-400/10 text-sky-300',
@@ -224,6 +251,7 @@ const iconTone = {
 const Home = () => {
   const { user } = useAuthStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [openFaqIndex, setOpenFaqIndex] = useState(null);
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
@@ -241,7 +269,7 @@ const Home = () => {
   const primaryLabel = user ? 'Open trading terminal' : 'Get started';
 
   return (
-    <div className="min-h-screen overflow-hidden bg-[#07090d] font-sans text-slate-100 selection:bg-orange-400 selection:text-black">
+    <div className="min-h-screen overflow-x-hidden bg-[#07090d] font-sans text-slate-100 selection:bg-orange-400 selection:text-black">
       {/* Ambient background */}
       <div className="pointer-events-none fixed inset-0 -z-0 overflow-hidden" aria-hidden="true">
         <div className="absolute -left-48 top-32 h-[28rem] w-[28rem] rounded-full bg-orange-500/[0.07] blur-[130px]" />
@@ -249,22 +277,20 @@ const Home = () => {
         <div className="absolute inset-0 opacity-[0.025] [background-image:linear-gradient(rgba(255,255,255,.7)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.7)_1px,transparent_1px)] [background-size:72px_72px]" />
       </div>
 
-      {/* Navigation */}
-      <header className="sticky top-0 z-50 border-b border-white/[0.07] bg-[#080a0f]/85 backdrop-blur-2xl">
-        <div className="mx-auto flex h-[76px] max-w-7xl items-center justify-between px-5 sm:px-8">
+      {/* Navigation - Sticky Header */}
+      <header className="sticky top-0 z-50 border-b border-white/[0.07] bg-[#080a0f]/90 backdrop-blur-xl">
+        <div className="mx-auto flex h-[76px] max-w-8xl items-center justify-between px-5 sm:px-8">
           <Link to="/" className="group flex items-center gap-3" aria-label="Hoba Labs home">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-orange-400/30 bg-orange-400/10 text-lg font-black text-orange-300 shadow-[0_0_28px_rgba(249,115,22,0.12)] transition duration-300 group-hover:rotate-6 group-hover:scale-105">
-              H
+            <div className="text-center space-y-1">
+              <img src={logo} alt="Hoba Labs Logo" className="mx-auto h-14" />
             </div>
-            <span className="text-base font-extrabold tracking-[0.12em] text-white">
-              HOBA <span className="text-orange-400">LABS</span>
-            </span>
           </Link>
 
           <nav className="hidden items-center gap-8 text-[13px] font-medium text-slate-400 lg:flex">
             <a href="#platform" className="transition hover:text-orange-300">Platform</a>
-            <a href="#how-it-works" className="transition hover:text-orange-300">How it works</a>
+            <a href="#about" className="transition hover:text-orange-300">About Us</a>
             <a href="#testimonials" className="transition hover:text-orange-300">Testimonials</a>
+            <a href="#faq" className="transition hover:text-orange-300">FAQ</a>
             <Link to="/news" className="transition hover:text-orange-300">Market news</Link>
             <Link to="/contact" className="transition hover:text-orange-300">Contact</Link>
           </nav>
@@ -316,8 +342,9 @@ const Home = () => {
             <div className="mx-auto flex max-w-7xl flex-col gap-1">
               {[
                 ['Platform', '#platform'],
-                ['How it works', '#how-it-works'],
+                ['About Us', '#about'],
                 ['Testimonials', '#testimonials'],
+                ['FAQ', '#faq'],
               ].map(([label, href]) => (
                 <a
                   key={label}
@@ -347,20 +374,15 @@ const Home = () => {
 
       <main className="relative z-10">
         {/* Hero */}
-        <section className="relative mx-auto grid max-w-7xl items-center gap-14 px-5 pb-20 pt-20 sm:px-8 sm:pt-28 lg:grid-cols-2 lg:gap-16 lg:pb-28 lg:pt-32">
+        <section className="relative mx-auto grid max-w-8xl items-center gap-14 px-5 pb-10 pt-10 sm:px-4 sm:pt-20 lg:grid-cols-2 lg:gap-16 lg:pb-10 lg:pt-8">
           <motion.div
             variants={stagger}
             initial="hidden"
             animate="visible"
             className="relative z-10"
           >
-            <motion.div variants={reveal} className="mb-7 inline-flex items-center gap-2 rounded-full border border-orange-400/20 bg-orange-400/[0.07] px-4 py-2 text-[11px] font-semibold tracking-wide text-orange-200">
-              <Sparkles size={14} className="text-orange-300" />
-              A smarter approach to trading
-              <span className="ml-1 h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,.8)]" />
-            </motion.div>
 
-            <motion.h1 variants={reveal} className="max-w-2xl text-[clamp(2.8rem,6vw,5.6rem)] font-extrabold leading-[1.02] tracking-[-0.055em] text-white">
+            <motion.h1 variants={reveal} className="max-w-2xl text-[clamp(2.8rem,6vw,5.6rem)] font-sans font-bold leading-[1.02] tracking-[-0.055em] text-white">
               Trade with
               <br />
               <span className="bg-gradient-to-r from-orange-300 via-amber-400 to-orange-500 bg-clip-text text-transparent">
@@ -372,7 +394,7 @@ const Home = () => {
             </motion.h1>
 
             <motion.p variants={reveal} className="mt-7 max-w-xl text-sm leading-8 text-slate-400 sm:text-base">
-              Hoba Labs brings market analysis, structured trading signals and practical risk-management tools into one focused trading experience.
+              Hoba Labs brings high-accuracy trading signals, EA automated trading, and practical risk-management tools into one unified platform.
             </motion.p>
 
             <motion.div variants={reveal} className="mt-9 flex flex-col gap-3 sm:flex-row">
@@ -390,11 +412,6 @@ const Home = () => {
                 Explore the platform <ChevronDown size={16} />
               </a>
             </motion.div>
-
-            <motion.div variants={reveal} className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-3 border-t border-white/[0.08] pt-7 text-xs text-slate-500">
-              <span className="inline-flex items-center gap-2"><Check size={14} className="text-orange-300" /> Structured market analysis</span>
-              <span className="inline-flex items-center gap-2"><Check size={14} className="text-orange-300" /> Risk-aware workflow</span>
-            </motion.div>
           </motion.div>
 
           {/* Product preview */}
@@ -411,17 +428,6 @@ const Home = () => {
               className="absolute -inset-5 rounded-[2.5rem] bg-gradient-to-br from-orange-500/15 via-transparent to-amber-300/[0.06] blur-2xl"
             />
             <div className="relative overflow-hidden rounded-[1.7rem] border border-white/[0.12] bg-[#0d1119]/95 p-4 shadow-[0_35px_100px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:p-6">
-              <div className="flex items-center justify-between border-b border-white/[0.07] pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-400/10 text-orange-300"><BarChart3 size={18} /></div>
-                  <div>
-                    <p className="text-xs font-bold text-white">Hoba trading workspace</p>
-                    <p className="mt-0.5 text-[10px] text-slate-500">Market overview</p>
-                  </div>
-                </div>
-                <span className="rounded-full border border-emerald-400/20 bg-emerald-400/[0.08] px-2.5 py-1 text-[9px] font-semibold text-emerald-300">● MARKET WATCH</span>
-              </div>
-
               <div className="grid grid-cols-2 gap-3 py-5">
                 <div className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4">
                   <p className="text-[10px] text-slate-500">Selected market</p>
@@ -475,18 +481,6 @@ const Home = () => {
                   ))}
                 </div>
               </div>
-
-              <div className="mt-4 flex items-center justify-between rounded-xl border border-orange-300/15 bg-orange-300/[0.06] px-4 py-3">
-                <div className="flex items-center gap-2.5">
-                  <MessageSquare size={16} className="text-orange-300" />
-                  <div>
-                    <p className="text-[10px] font-semibold text-white">Telegram signal updates</p>
-                    <p className="mt-0.5 text-[9px] text-slate-500">Stay connected to your trading workflow</p>
-                  </div>
-                </div>
-                <ArrowUpRight size={16} className="text-orange-300" />
-              </div>
-              <p className="mt-3 text-center text-[9px] text-slate-600">Illustrative product preview · Not live account or performance data</p>
             </div>
           </motion.div>
         </section>
@@ -494,13 +488,12 @@ const Home = () => {
         <TradingViewLiveTicker />
 
         {/* Platform features */}
-        <section id="platform" className="scroll-mt-24 px-5 py-24 sm:px-8 lg:py-28">
+        <section id="platform" className="scroll-mt-24 px-5 py-24 sm:px-8 lg:py-20">
           <div className="mx-auto max-w-7xl">
             <Reveal>
               <SectionHeading
                 eyebrow="The Hoba Labs edge"
-                title={<>A more structured way to<br className="hidden sm:block" /> approach the markets.</>}
-                description="Tools and insights designed to help traders make informed decisions, stay organised and approach every setup with a plan."
+                title={<>Built for peak performance.</>}
               />
             </Reveal>
 
@@ -511,7 +504,7 @@ const Home = () => {
               viewport={{ once: false, amount: 0.15 }}
               className="grid gap-5 md:grid-cols-3"
             >
-              {features.map((feature, index) => {
+              {features.map((feature) => {
                 const Icon = feature.icon;
                 return (
                   <motion.article
@@ -537,80 +530,54 @@ const Home = () => {
           </div>
         </section>
 
-        {/* How it works */}
-        <section id="how-it-works" className="scroll-mt-24 border-y border-white/[0.06] bg-[#0a0d13] px-5 py-24 sm:px-8 lg:py-28">
-          <div className="mx-auto grid max-w-7xl gap-14 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
-            <Reveal amount={0.25}>
+        {/* About Us Section */}
+        <section id="about" className="scroll-mt-24 border-t border-white/[0.06] bg-[#080b11] px-5 py-24 sm:px-8 lg:py-28">
+          <div className="mx-auto max-w-7xl">
+            <Reveal>
               <SectionHeading
-                align="left"
-                eyebrow="A clear process"
-                title={<>From market context to a considered trade.</>}
-                description="Hoba Labs is built around a disciplined workflow: understand the bigger picture, wait for confirmation and manage risk with intention."
+                eyebrow="Who we are"
+                title="Engineered for traders, driven by precision."
+                description="Hoba Labs was built to bridge the gap between complex market analytics, high-frequency signals, and automated execution. We empower traders of all levels with institutional signals and robust EA technology."
               />
-              <Link to="/register" className="inline-flex items-center gap-2 rounded-full border border-orange-300/25 px-5 py-3 text-xs font-bold text-orange-200 transition hover:bg-orange-300/10">
-                Explore Hoba Labs <ArrowRight size={15} />
-              </Link>
             </Reveal>
 
             <motion.div
               variants={stagger}
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: false, amount: 0.2 }}
-              className="space-y-4"
+              viewport={{ once: false, amount: 0.15 }}
+              className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mt-12"
             >
-              {steps.map((step, index) => (
-                <motion.div
-                  key={step.number}
-                  variants={reveal}
-                  className="group flex gap-5 rounded-2xl border border-white/[0.07] bg-[#0e131c] p-6 transition hover:border-orange-300/25 sm:gap-7 sm:p-7"
-                >
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-orange-300/20 bg-orange-300/[0.07] font-mono text-sm font-bold text-orange-300">
-                    {step.number}
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-base font-bold text-white sm:text-lg">{step.title}</h3>
-                    <p className="mt-2 text-sm leading-7 text-slate-400">{step.description}</p>
-                  </div>
-                  <ArrowUpRight size={18} className="mt-1 shrink-0 text-slate-600 transition group-hover:text-orange-300" />
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </section>
-
-        {/* ICC / methodology feature */}
-        <section className="px-5 py-24 sm:px-8 lg:py-28">
-          <div className="mx-auto max-w-7xl">
-            <Reveal>
-              <div className="relative overflow-hidden rounded-[2rem] border border-orange-300/15 bg-gradient-to-br from-[#1b140f] via-[#11131a] to-[#0d1119] p-8 sm:p-12 lg:p-16">
-                <div className="absolute -right-20 -top-24 h-80 w-80 rounded-full bg-orange-500/[0.10] blur-[90px]" />
-                <div className="relative grid gap-10 lg:grid-cols-[1fr_auto] lg:items-center">
-                  <div className="max-w-2xl">
-                    <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.22em] text-orange-300"><Zap size={14} /> Strategy-led thinking</span>
-                    <h2 className="mt-5 text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">
-                      Structure first.
-                      <span className="block text-orange-300">Execution with purpose.</span>
-                    </h2>
-                    <p className="mt-5 max-w-xl text-sm leading-8 text-slate-400">
-                      The Hoba Labs approach is centred on understanding market direction, allowing price to correct and waiting for continuation confirmation before considering a trade.
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                    {[
-                      ['I', 'Indication'],
-                      ['C', 'Correction'],
-                      ['C', 'Continuation'],
-                    ].map(([letter, label], index) => (
-                      <div key={`${letter}-${label}`} className="flex min-w-0 flex-col items-center rounded-2xl border border-white/10 bg-black/20 px-3 py-5 text-center sm:px-5 sm:py-7">
-                        <span className="text-3xl font-black text-orange-300 sm:text-4xl">{letter}</span>
-                        <span className="mt-3 text-[9px] font-semibold text-slate-300 sm:text-[10px]">{label}</span>
-                      </div>
-                    ))}
-                  </div>
+              <motion.div variants={reveal} className="rounded-3xl border border-white/[0.08] bg-[#0d1119] p-8">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-orange-400/20 bg-orange-400/10 text-orange-300 mb-6">
+                  <Sparkles size={22} />
                 </div>
-              </div>
-            </Reveal>
+                <h3 className="text-lg font-bold text-white">Our Mission</h3>
+                <p className="mt-3 text-sm leading-7 text-slate-400">
+                  To simplify forex market navigation by delivering lightning-fast, high-accuracy structural signals and automated trade lifecycle management tools that foster consistency and discipline.
+                </p>
+              </motion.div>
+
+              <motion.div variants={reveal} className="rounded-3xl border border-white/[0.08] bg-[#0d1119] p-8">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-sky-400/20 bg-sky-400/10 text-sky-300 mb-6">
+                  <BarChart3 size={22} />
+                </div>
+                <h3 className="text-lg font-bold text-white">Advanced Technology</h3>
+                <p className="mt-3 text-sm leading-7 text-slate-400">
+                  Powered by custom automation algorithms and MetaTrader integration, our platform monitors multi-timeframe price action, order fills, take-profits, and stop-losses seamlessly around the clock.
+                </p>
+              </motion.div>
+
+              <motion.div variants={reveal} className="rounded-3xl border border-white/[0.08] bg-[#0d1119] p-8 md:col-span-2 lg:col-span-1">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-emerald-400/20 bg-emerald-400/10 text-emerald-300 mb-6">
+                  <ShieldCheck size={22} />
+                </div>
+                <h3 className="text-lg font-bold text-white">Prop-Firm Friendly</h3>
+                <p className="mt-3 text-sm leading-7 text-slate-400">
+                  With rigorous risk calculators and precision micro-lot sizing configurations, Hoba Labs is optimized to help traders pass evaluations and protect capital safely within institutional rules.
+                </p>
+              </motion.div>
+            </motion.div>
           </div>
         </section>
 
@@ -655,6 +622,56 @@ const Home = () => {
           </div>
         </section>
 
+        {/* FAQ Section */}
+        <section id="faq" className="scroll-mt-24 border-t border-white/[0.06] bg-[#07090d] px-5 py-24 sm:px-8 lg:py-28">
+          <div className="mx-auto max-w-4xl">
+            <Reveal>
+              <SectionHeading
+                eyebrow="Got questions?"
+                title="Frequently Asked Questions"
+                description="Find answers to common inquiries about Hoba Labs, our subscription options, signal delivery, and trading features."
+              />
+            </Reveal>
+
+            <motion.div
+              variants={stagger}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: false, amount: 0.1 }}
+              className="mt-10 space-y-4"
+            >
+              {faqs.map((faq, index) => {
+                const isOpen = openFaqIndex === index;
+                return (
+                  <motion.div
+                    key={faq.question}
+                    variants={reveal}
+                    className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0d1119] transition-colors hover:border-orange-300/20"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setOpenFaqIndex(isOpen ? null : index)}
+                      className="flex w-full items-center justify-between px-6 py-5 text-left text-base font-bold text-white transition hover:text-orange-300"
+                      aria-expanded={isOpen}
+                    >
+                      <span>{faq.question}</span>
+                      <ChevronDown
+                        size={18}
+                        className={`text-orange-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+                      />
+                    </button>
+                    {isOpen && (
+                      <div className="border-t border-white/[0.06] px-6 py-4 text-sm leading-7 text-slate-400">
+                        {faq.answer}
+                      </div>
+                    )}
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          </div>
+        </section>
+
         {/* Final CTA */}
         <section className="px-5 py-24 sm:px-8 lg:py-28">
           <div className="mx-auto max-w-7xl">
@@ -662,10 +679,7 @@ const Home = () => {
               <div className="relative overflow-hidden rounded-[2rem] border border-orange-300/20 bg-[#11141b] px-7 py-16 text-center sm:px-12">
                 <div className="pointer-events-none absolute left-1/2 top-0 h-64 w-[34rem] -translate-x-1/2 rounded-full bg-orange-500/[0.10] blur-[100px]" />
                 <div className="relative mx-auto max-w-2xl">
-                  <span className="inline-flex items-center gap-2 rounded-full border border-orange-300/20 bg-orange-300/[0.07] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-orange-200">
-                    <Sparkles size={12} /> Your next step starts here
-                  </span>
-                  <h2 className="mt-6 text-3xl font-extrabold tracking-tight text-white sm:text-5xl">
+                  <h2 className="mt-6 text-3xl font-sans font-bold tracking-tight text-white sm:text-5xl">
                     Make your trading process more intentional.
                   </h2>
                   <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-slate-400">
@@ -692,8 +706,9 @@ const Home = () => {
           <div className="grid gap-12 border-b border-white/[0.07] pb-12 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
             <div className="max-w-sm">
               <Link to="/" className="inline-flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-orange-400/30 bg-orange-400/10 text-lg font-black text-orange-300">H</span>
-                <span className="text-base font-extrabold tracking-[0.12em] text-white">HOBA <span className="text-orange-400">LABS</span></span>
+               <div className="text-center space-y-1">
+              <img src={logo} alt="Hoba Labs Logo" className="mx-auto h-16" />
+            </div>
               </Link>
               <p className="mt-5 text-sm leading-7 text-slate-500">
                 A focused trading technology experience built to bring market analysis, signals and risk-aware tools closer together.
@@ -704,7 +719,8 @@ const Home = () => {
               <h3 className="text-xs font-bold uppercase tracking-[0.16em] text-white">Platform</h3>
               <div className="mt-5 flex flex-col gap-3 text-sm text-slate-500">
                 <a href="#platform" className="transition hover:text-orange-300">Features</a>
-                <a href="#how-it-works" className="transition hover:text-orange-300">How it works</a>
+                <a href="#about" className="transition hover:text-orange-300">About Us</a>
+                <a href="#faq" className="transition hover:text-orange-300">FAQ</a>
                 <Link to="/news" className="transition hover:text-orange-300">Market news</Link>
                 <Link to="/dashboard" className="transition hover:text-orange-300">Trading terminal</Link>
               </div>
