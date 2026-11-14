@@ -73,6 +73,14 @@ const Dashboard = ({ onOpenSubscriptionModal }) => {
   const isPaid = ['active', 'monthly', 'annual'].includes(subStatus);
   const isTrialing = subStatus === 'trialing';
 
+  const formattedCurrentDate = sub?.currentPeriodEnd
+    ? new Date(sub.currentPeriodEnd).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
+    : '';
+
   const formattedTrialDate = sub?.trialEndsAt
     ? new Date(sub.trialEndsAt).toLocaleDateString('en-US', {
         month: 'short',
@@ -81,11 +89,7 @@ const Dashboard = ({ onOpenSubscriptionModal }) => {
       })
     : '';
 
-  const planDisplay = isPaid
-    ? sub.planType || 'Pro Plan'
-    : isTrialing
-      ? `Free Trial${formattedTrialDate ? ` · Ends ${formattedTrialDate}` : ''}`
-      : 'Free Tier';
+  const planDisplay = isPaid ? sub.planType : isTrialing ? `Free Trial${formattedTrialDate ? ` · Ends ${formattedTrialDate}` : ''}` : 'Free Tier';
 
   const referralLink = `${import.meta.env.VITE_FRONTEND_URL}/register?ref=${user?.referralCode || ''}`;
   const botUrl = import.meta.env.VITE_BOT_URL || '';
@@ -158,7 +162,7 @@ const Dashboard = ({ onOpenSubscriptionModal }) => {
         {/* Top bar */}
         <motion.header
           variants={itemVariants}
-          className="flex flex-col gap-5 rounded-2xl border border-white/[0.07] bg-slate-900/65 p-5 shadow-2xl shadow-black/10 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:p-6"
+          className="flex flex-col gap-5 rounded-lg border border-white/[0.07] bg-slate-900/65 p-5 shadow-2xl shadow-black/10 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:p-6"
         >
           <div className="min-w-0">
             <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
@@ -187,19 +191,12 @@ const Dashboard = ({ onOpenSubscriptionModal }) => {
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Overview</p>
             <h2 className="mt-1 text-xl font-semibold text-white">Account summary</h2>
           </div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/15 bg-emerald-400/[0.07] px-3 py-1.5 text-xs font-medium text-emerald-300">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-50" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-            </span>
-            Account connected
-          </div>
         </motion.div>
 
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
           {/* Profile */}
           <MotionCard className="xl:col-span-4">
-            <div className="relative h-full overflow-hidden rounded-2xl border border-white/[0.08] bg-slate-900/75 p-6 shadow-xl shadow-black/10 backdrop-blur-xl">
+            <div className="relative h-full overflow-hidden rounded-lg border border-white/[0.08] bg-slate-900/75 p-6 shadow-xl shadow-black/10 backdrop-blur-xl">
               <div className="absolute right-0 top-0 h-36 w-36 rounded-full bg-orange-500/[0.08] blur-3xl" />
               <div className="relative">
                 <div className="flex items-center justify-between">
@@ -215,7 +212,7 @@ const Dashboard = ({ onOpenSubscriptionModal }) => {
                 </div>
 
                 <div className="mt-7 flex items-center gap-4">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 to-amber-600 text-xl font-bold text-slate-950 shadow-lg shadow-orange-500/20">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-amber-600 text-xl font-bold text-slate-950 shadow-lg shadow-orange-500/20">
                     {(firstName?.[0] || 'T').toUpperCase()}
                   </div>
                   <div className="min-w-0">
@@ -241,7 +238,12 @@ const Dashboard = ({ onOpenSubscriptionModal }) => {
                         <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${isPaid ? 'bg-emerald-400/10 text-emerald-300' : isTrialing ? 'bg-blue-400/10 text-blue-300' : 'bg-slate-700/60 text-slate-300'}`}>
                           {isPaid ? 'Active' : isTrialing ? 'Trial' : 'Free'}
                         </span>
+                        <br />
+                        
                       </div>
+                      <span className="text-xs text-slate-400">
+                          {isPaid && formattedCurrentDate ? `Next billing: ${formattedCurrentDate}` : ''}
+                        </span>
                     </div>
                   </div>
                 </div>
@@ -252,7 +254,7 @@ const Dashboard = ({ onOpenSubscriptionModal }) => {
                     if (onOpenSubscriptionModal) onOpenSubscriptionModal();
                     else setIsSubModalOpen(true);
                   }}
-                  className="mt-7 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-400 to-amber-500 px-4 py-3 text-sm font-bold text-slate-950 shadow-lg shadow-orange-500/15 transition duration-200 hover:-translate-y-0.5 hover:shadow-orange-500/25 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-2 focus:ring-offset-slate-900"
+                  className={`${isPaid ? 'hidden' : 'bg-gradient-to-r from-orange-400 to-amber-500'} mt-7 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-slate-950 shadow-lg shadow-orange-500/15 transition duration-200 hover:-translate-y-0.5 hover:shadow-orange-500/25 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-2 focus:ring-offset-slate-900`}
                 >
                   {isPaid ? <Crown size={16} /> : <Zap size={16} />}
                   {isPaid ? 'Manage subscription' : 'Upgrade your plan'}
@@ -265,7 +267,7 @@ const Dashboard = ({ onOpenSubscriptionModal }) => {
           {/* Status and strategy cards */}
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:col-span-8">
             <MotionCard>
-              <div className="group relative h-full overflow-hidden rounded-2xl border border-white/[0.08] bg-slate-900/75 p-6 backdrop-blur-xl transition-colors hover:border-emerald-400/30">
+              <div className="group relative h-full overflow-hidden rounded-lg border border-white/[0.08] bg-slate-900/75 p-6 backdrop-blur-xl transition-colors hover:border-emerald-400/30">
                 <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-emerald-400/[0.07] blur-2xl transition-transform duration-500 group-hover:scale-125" />
                 <div className="relative flex items-start justify-between">
                   <div className="rounded-xl border border-emerald-400/15 bg-emerald-400/[0.08] p-3 text-emerald-300">
@@ -286,7 +288,7 @@ const Dashboard = ({ onOpenSubscriptionModal }) => {
             </MotionCard>
 
             <MotionCard>
-              <div className="group relative h-full overflow-hidden rounded-2xl border border-white/[0.08] bg-slate-900/75 p-6 backdrop-blur-xl transition-colors hover:border-orange-400/30">
+              <div className="group relative h-full overflow-hidden rounded-lg border border-white/[0.08] bg-slate-900/75 p-6 backdrop-blur-xl transition-colors hover:border-orange-400/30">
                 <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-orange-400/[0.07] blur-2xl transition-transform duration-500 group-hover:scale-125" />
                 <div className="relative flex items-start justify-between">
                   <div className="rounded-xl border border-orange-400/15 bg-orange-400/[0.08] p-3 text-orange-300">
@@ -309,7 +311,7 @@ const Dashboard = ({ onOpenSubscriptionModal }) => {
 
             {/* Referral */}
             <MotionCard className="sm:col-span-2">
-              <div className="relative overflow-hidden rounded-2xl border border-orange-400/20 bg-gradient-to-br from-orange-500/[0.13] via-slate-900/90 to-slate-900 p-6 shadow-xl shadow-black/10 sm:p-7">
+              <div className="relative overflow-hidden rounded-lg border border-orange-400/20 bg-gradient-to-br from-orange-500/[0.13] via-slate-900/90 to-slate-900 p-6 shadow-xl shadow-black/10 sm:p-7">
                 <div className="absolute -right-12 -top-16 h-56 w-56 rounded-full border border-orange-300/[0.08]" />
                 <div className="absolute -right-3 -top-7 h-40 w-40 rounded-full border border-orange-300/[0.08]" />
                 <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
@@ -350,11 +352,11 @@ const Dashboard = ({ onOpenSubscriptionModal }) => {
 
         {/* Telegram connection */}
         <MotionCard>
-          <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-slate-900/75 p-6 shadow-xl shadow-black/10 backdrop-blur-xl sm:p-7">
+          <div className="relative overflow-hidden rounded-lg border border-white/[0.08] bg-slate-900/75 p-6 shadow-xl shadow-black/10 backdrop-blur-xl sm:p-7">
             <div className="absolute -right-10 -top-20 h-56 w-56 rounded-full bg-blue-500/[0.07] blur-3xl" />
             <div className="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex items-start gap-4">
-                <div className="rounded-2xl border border-blue-400/15 bg-blue-400/[0.08] p-3.5 text-blue-300">
+                <div className="rounded-lg border border-blue-400/15 bg-blue-400/[0.08] p-3.5 text-blue-300">
                   <Bot size={24} />
                 </div>
                 <div>
