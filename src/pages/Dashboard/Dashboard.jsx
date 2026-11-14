@@ -145,7 +145,7 @@ const Dashboard = ({ onOpenSubscriptionModal }) => {
   const fullName = `${user?.firstName || user?.first_name || ''} ${user?.lastName || user?.last_name || ''}`.trim();
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#080b12] text-slate-100">
+    <div className="p-2 mx-auto relative min-h-screen overflow-hidden bg-[#080b12] text-slate-100">
       {/* Ambient background */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-48 right-[-8rem] h-[28rem] w-[28rem] rounded-full bg-orange-500/[0.09] blur-[110px]" />
