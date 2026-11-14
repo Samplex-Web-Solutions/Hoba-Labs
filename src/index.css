@@ -22,3 +22,23 @@ body {
 .animate-marquee:hover {
   animation-play-state: paused; /* Pause scrolling when hovering over it */
 }
+
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  input, select,textarea{
+    font-family: sans-serif;
+    font-size: 16px !important;
+  }
+}
+
+@media (min-width: 640px) {
+  input, select,textarea{
+    font-family: sans-serif;
+    font-size: 0.875rem !important;
+  }
+  
+}
