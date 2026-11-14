@@ -1,384 +1,477 @@
 import React, { useState, useEffect } from 'react';
-import { getSubscriptionPlansApi, initializeSubscriptionPaymentApi, initializeCryptoPaymentApi } from '../../services/api';
-import { X, CheckCircle2, Loader2, LayersPlus, CreditCard, Coins } from 'lucide-react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import {
+  X,
+  CheckCircle2,
+  Loader2,
+  LayersPlus,
+  CreditCard,
+  Coins,
+  ArrowLeft,
+  ArrowRight,
+  ShieldCheck,
+  Sparkles,
+  Zap,
+  Clock3,
+  BadgeCheck,
+  LockKeyhole,
+} from 'lucide-react';
+import {
+  getSubscriptionPlansApi,
+  initializeSubscriptionPaymentApi,
+  initializeCryptoPaymentApi,
+} from '../../services/api';
 import { toast } from 'react-toastify';
+
+const ease = [0.22, 1, 0.36, 1];
+
+const backdropVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.22 } },
+  exit: { opacity: 0, transition: { duration: 0.18 } },
+};
+
+const panelVariants = {
+  hidden: { opacity: 0, y: 28, scale: 0.97 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.32, ease } },
+  exit: { opacity: 0, y: 20, scale: 0.98, transition: { duration: 0.2, ease: 'easeIn' } },
+};
+
+const contentVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.28, ease } },
+  exit: { opacity: 0, y: -8, transition: { duration: 0.16 } },
+};
 
 const SubscriptionModal = ({ isOpen, onClose }) => {
   const [plans, setPlans] = useState([]);
+  const [selectedMethod, setSelectedMethod] = useState(null);
   const [selectedPlanKey, setSelectedPlanKey] = useState('');
   const [loading, setLoading] = useState(true);
-  const [processingPaystack, setProcessingPaystack] = useState(false);
-  const [processingCrypto, setProcessingCrypto] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
-    if (isOpen) {
-      setIsVisible(true);
-      loadPlans();
-    } else {
-      const timer = setTimeout(() => setIsVisible(false), 300);
-      return () => clearTimeout(timer);
+    if (!isOpen) return undefined;
+
+    let cancelled = false;
+
+    const loadPlans = async () => {
+      setLoading(true);
+      try {
+        const data = await getSubscriptionPlansApi();
+        if (!cancelled && data.success && data.plans?.length > 0) {
+          setPlans(data.plans);
+          setSelectedPlanKey((current) =>
+            data.plans.some((plan) => plan.plan_key === current)
+              ? current
+              : data.plans[0].plan_key
+          );
+        } else if (!cancelled && (!data.plans || data.plans.length === 0)) {
+          setPlans([]);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error('Failed to load plans:', err);
+          toast.error(err.message || 'Could not load subscription packages.');
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    loadPlans();
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedMethod(null);
+      setProcessing(false);
     }
   }, [isOpen]);
 
-  const loadPlans = async () => {
-    setLoading(true);
-    try {
-      const data = await getSubscriptionPlansApi();
-      if (data.success && data.plans?.length > 0) {
-        setPlans(data.plans);
-        setSelectedPlanKey(data.plans[0].plan_key);
-      }
-    } catch (err) {
-      console.error('Failed to load plans:', err);
-      toast.error(err.message || 'Could not load subscription packages.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    if (!isOpen) return undefined;
 
-  const handlePaystackCheckout = async () => {
-    if (!selectedPlanKey) {
-      toast.error('Please select a subscription plan.');
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape' && !processing) onClose();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose, processing]);
+
+  const handleCheckout = async () => {
+    if (!selectedPlanKey || !selectedMethod) {
+      toast.error('Please select a payment method and plan.');
       return;
     }
 
-    setProcessingPaystack(true);
+    setProcessing(true);
     try {
-      const data = await initializeSubscriptionPaymentApi(selectedPlanKey);
-
-      if (data.success && data.authorization_url) {
-        window.location.href = data.authorization_url;
+      if (selectedMethod === 'paystack') {
+        const data = await initializeSubscriptionPaymentApi(selectedPlanKey);
+        if (data.success && data.authorization_url) {
+          window.location.href = data.authorization_url;
+          return;
+        }
+      } else if (selectedMethod === 'crypto') {
+        const data = await initializeCryptoPaymentApi(selectedPlanKey);
+        if (data.success && data.invoice_url) {
+          window.location.href = data.invoice_url;
+          return;
+        }
       }
+
+      toast.error('Unable to create your payment session. Please try again.');
+      setProcessing(false);
     } catch (err) {
-      console.error('Paystack checkout error:', err);
-      toast.error(err.message || 'Failed to start Paystack payment session.');
-      setProcessingPaystack(false);
+      console.error('Checkout error:', err);
+      toast.error(err.message || 'Failed to start payment session.');
+      setProcessing(false);
     }
   };
 
-  const handleCryptoCheckout = async () => {
-    if (!selectedPlanKey) {
-      toast.error('Please select a subscription plan.');
-      return;
-    }
+  if (!isOpen) return null;
 
-    setProcessingCrypto(true);
-    try {
-      const data = await initializeCryptoPaymentApi(selectedPlanKey);
+  const activePlan = plans.find((plan) => plan.plan_key === selectedPlanKey);
+  const isEaPlan =
+    selectedPlanKey.toLowerCase().includes('ea') ||
+    selectedPlanKey.toLowerCase().includes('bundle');
 
-      if (data.success && data.invoice_url) {
-        window.location.href = data.invoice_url;
-      }
-    } catch (err) {
-      console.error('Crypto checkout error:', err);
-      toast.error(err.message || 'Failed to initialize crypto invoice.');
-      setProcessingCrypto(false);
-    }
-  };
-
-  if (!isOpen && !isVisible) return null;
-
-  const activePlan = plans.find(p => p.plan_key === selectedPlanKey);
-  const isEaPlan = selectedPlanKey.includes('ea') || selectedPlanKey.includes('bundle');
-  const isBusy = processingPaystack || processingCrypto;
+  const Motion = reduceMotion ? motion.div : motion.div;
 
   return (
-    <div className={`fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all duration-300 ${isOpen ? 'bg-black/85 backdrop-blur-sm opacity-100' : 'bg-black/0 backdrop-blur-none opacity-0 pointer-events-none'}`}>
-      <div 
-        className={`bg-slate-900 border-t sm:border border-slate-800 rounded-t-2xl sm:rounded-md max-w-2xl w-full p-5 sm:p-6 relative shadow-2xl max-h-[90vh] overflow-y-auto transition-transform duration-300 ease-out ${
-          isOpen ? 'translate-y-0 opacity-100' : 'translate-y-full sm:translate-y-8 opacity-0'
-        }`}
-      >
-        
-        {/* Mobile Drag Indicator Bar */}
-        <div className="w-12 h-1.5 bg-slate-700 rounded-full mx-auto mb-4 sm:hidden" />
-
-        <button 
-          onClick={onClose}
-          className="absolute top-4 right-4 sm:top-5 sm:right-5 text-slate-400 hover:text-slate-100 bg-slate-800/50 p-2 rounded-full transition-colors z-10"
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="fixed inset-0 z-[100] flex items-end justify-center bg-black/75 p-0 backdrop-blur-md sm:items-center sm:p-4"
+          variants={backdropVariants}
+          initial={reduceMotion ? false : 'hidden'}
+          animate="visible"
+          exit="exit"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && !processing) onClose();
+          }}
         >
-          <X className="w-4 h-4" />
-        </button>
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="subscription-modal-title"
+            variants={reduceMotion ? undefined : panelVariants}
+            initial={reduceMotion ? false : 'hidden'}
+            animate="visible"
+            exit="exit"
+            className="relative flex max-h-[94vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-[28px] border border-white/10 bg-[#0b101b] shadow-[0_30px_100px_rgba(0,0,0,0.6)] sm:max-h-[90vh] sm:rounded-[28px]"
+          >
+            {/* Ambient highlights */}
+            <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+              <div className="absolute -right-20 -top-24 h-64 w-64 rounded-full bg-orange-500/10 blur-[90px]" />
+              <div className="absolute -bottom-28 -left-20 h-64 w-64 rounded-full bg-amber-500/[0.06] blur-[90px]" />
+            </div>
 
-        <div className="text-center mb-5 sm:mb-6">
-          <div className="w-12 h-12 bg-orange-500/10 border border-orange-500/20 text-orange-400 rounded-md flex items-center justify-center mx-auto mb-3">
-            <LayersPlus className="w-6 h-6"/>
-          </div>
-          <h2 className="text-lg sm:text-xl font-semibold text-slate-100">Upgrade Hoba Labs Access</h2>
-          <p className="text-xs text-slate-400 mt-1 px-4">Choose between manual Telegram Signal streams or 100% automated MT5 EA execution.</p>
-        </div>
+            <div className="relative flex items-center justify-between border-b border-white/[0.07] px-5 py-4 sm:px-7">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-orange-400/20 bg-orange-400/10 text-orange-300">
+                  <LayersPlus size={19} />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-300">Hoba Labs</p>
+                  <p className="mt-0.5 text-sm font-semibold text-white">Subscription checkout</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={processing}
+                aria-label="Close subscription modal"
+                className="rounded-xl border border-white/[0.08] bg-white/[0.04] p-2.5 text-slate-400 transition hover:border-white/20 hover:bg-white/[0.08] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <X size={17} />
+              </button>
+            </div>
 
-        {loading ? (
-          <div className="py-12 flex items-center justify-center space-x-2 text-slate-400 text-xs">
-            <Loader2 className="w-5 h-5 animate-spin text-orange-400" />
-            <span>Loading secure plans...</span>
-          </div>
-        ) : (
-          <div className="space-y-4 sm:space-y-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {plans.map((plan) => {
-                const isSelected = selectedPlanKey === plan.plan_key;
-                const planIsEa = plan.plan_key.includes('ea') || plan.plan_key.includes('bundle');
-                
-                return (
-                  <div
-                    key={plan.plan_key}
-                    onClick={() => setSelectedPlanKey(plan.plan_key)}
-                    className={`p-4 rounded-md border cursor-pointer transition-all flex flex-col justify-between ${
-                      isSelected 
-                        ? 'bg-orange-500/10 border-orange-500 text-slate-100 shadow-lg shadow-orange-500/10' 
-                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
-                    }`}
+            <div className="relative overflow-y-auto px-5 py-6 sm:px-7 sm:py-7">
+              <div className="mb-6">
+                <div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
+                  <span className={`h-1.5 w-1.5 rounded-full ${selectedMethod ? 'bg-emerald-400' : 'bg-orange-400'}`} />
+                  Step {selectedMethod ? '2' : '1'} of 2
+                </div>
+                <div className="mb-4 h-1 overflow-hidden rounded-full bg-white/[0.07]">
+                  <motion.div
+                    className="h-full rounded-full bg-gradient-to-r from-orange-400 to-amber-300"
+                    initial={false}
+                    animate={{ width: selectedMethod ? '100%' : '50%' }}
+                    transition={{ duration: reduceMotion ? 0 : 0.35, ease }}
+                  />
+                </div>
+              </div>
+
+              <AnimatePresence mode="wait">
+                {loading ? (
+                  <motion.div
+                    key="loading"
+                    variants={contentVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    className="flex min-h-[280px] flex-col items-center justify-center text-center"
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className={`text-xs font-semibold ${isSelected ? 'text-orange-400' : 'text-slate-200'}`}>
-                        {plan.name}
-                      </span>
-                      <span className={`text-[9px] px-2 py-0.5 rounded font-mono uppercase ${planIsEa ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 'bg-slate-900 text-slate-300 border border-slate-800'}`}>
-                        {planIsEa ? 'Auto EA' : 'Signals'}
+                    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-orange-400/20 bg-orange-400/10 text-orange-300">
+                      <Loader2 className="animate-spin" size={24} />
+                    </div>
+                    <h2 className="text-base font-semibold text-white">Preparing your packages</h2>
+                    <p className="mt-1 text-xs text-slate-500">Loading available subscription plans securely...</p>
+                  </motion.div>
+                ) : plans.length === 0 ? (
+                  <motion.div
+                    key="empty"
+                    variants={contentVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    className="flex min-h-[280px] flex-col items-center justify-center text-center"
+                  >
+                    <div className="mb-4 rounded-2xl border border-amber-400/20 bg-amber-400/10 p-4 text-amber-300">
+                      <LayersPlus size={24} />
+                    </div>
+                    <h2 className="text-base font-semibold text-white">Plans unavailable</h2>
+                    <p className="mt-1 max-w-xs text-sm leading-6 text-slate-400">
+                      We couldn&apos;t find any subscription packages right now. Please try again shortly.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLoading(true);
+                        getSubscriptionPlansApi()
+                          .then((data) => {
+                            if (data.success && data.plans?.length) {
+                              setPlans(data.plans);
+                              setSelectedPlanKey(data.plans[0].plan_key);
+                            } else {
+                              toast.error('No subscription packages are available yet.');
+                            }
+                          })
+                          .catch((err) => toast.error(err.message || 'Could not load subscription packages.'))
+                          .finally(() => setLoading(false));
+                      }}
+                      className="mt-5 rounded-xl bg-orange-400 px-5 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-orange-300"
+                    >
+                      Try again
+                    </button>
+                  </motion.div>
+                ) : !selectedMethod ? (
+                  <motion.div
+                    key="method"
+                    variants={contentVariants}
+                    initial={reduceMotion ? false : 'hidden'}
+                    animate="visible"
+                    exit="exit"
+                  >
+                    <div className="mb-6 text-center">
+                      <h2 id="subscription-modal-title" className="text-2xl font-bold tracking-tight text-white">
+                        Choose how to pay
+                      </h2>
+                      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-400">
+                        Select your preferred payment method to continue to your Hoba Labs subscription.
+                      </p>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <motion.button
+                        type="button"
+                        whileHover={reduceMotion ? undefined : { y: -3 }}
+                        whileTap={reduceMotion ? undefined : { scale: 0.99 }}
+                        onClick={() => setSelectedMethod('paystack')}
+                        className="group rounded-2xl border border-white/[0.09] bg-white/[0.025] p-5 text-left transition-colors hover:border-orange-400/40 hover:bg-orange-400/[0.05] focus:outline-none focus:ring-2 focus:ring-orange-300/50"
+                      >
+                        <div className="mb-5 flex items-center justify-between">
+                          <div className="rounded-xl border border-orange-400/20 bg-orange-400/10 p-3 text-orange-300">
+                            <CreditCard size={23} />
+                          </div>
+                          <ArrowRight size={18} className="text-slate-600 transition group-hover:translate-x-1 group-hover:text-orange-300" />
+                        </div>
+                        <h3 className="text-sm font-bold text-white">Bank transfer / Card</h3>
+                        <p className="mt-1 text-xs font-medium text-orange-200">Paystack · Nigerian Naira</p>
+                        <p className="mt-3 text-xs leading-5 text-slate-500">
+                          Pay in naira using the available Paystack payment options.
+                        </p>
+                      </motion.button>
+
+                      <motion.button
+                        type="button"
+                        whileHover={reduceMotion ? undefined : { y: -3 }}
+                        whileTap={reduceMotion ? undefined : { scale: 0.99 }}
+                        onClick={() => setSelectedMethod('crypto')}
+                        className="group rounded-2xl border border-white/[0.09] bg-white/[0.025] p-5 text-left transition-colors hover:border-amber-300/40 hover:bg-amber-300/[0.05] focus:outline-none focus:ring-2 focus:ring-amber-300/50"
+                      >
+                        <div className="mb-5 flex items-center justify-between">
+                          <div className="rounded-xl border border-amber-300/20 bg-amber-300/10 p-3 text-amber-200">
+                            <Coins size={23} />
+                          </div>
+                          <ArrowRight size={18} className="text-slate-600 transition group-hover:translate-x-1 group-hover:text-amber-200" />
+                        </div>
+                        <h3 className="text-sm font-bold text-white">Cryptocurrency</h3>
+                        <p className="mt-1 text-xs font-medium text-amber-200">NOWPayments · USD</p>
+                        <p className="mt-3 text-xs leading-5 text-slate-500">
+                          Pay using supported digital currencies such as USDT, BTC or ETH.
+                        </p>
+                      </motion.button>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="plans"
+                    variants={contentVariants}
+                    initial={reduceMotion ? false : 'hidden'}
+                    animate="visible"
+                    exit="exit"
+                  >
+                    <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedMethod(null)}
+                        className="inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-400 transition hover:bg-white/[0.05] hover:text-white"
+                      >
+                        <ArrowLeft size={15} /> Change payment method
+                      </button>
+                      <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-300">
+                        {selectedMethod === 'paystack' ? <CreditCard size={13} className="text-orange-300" /> : <Coins size={13} className="text-amber-200" />}
+                        {selectedMethod === 'paystack' ? 'Paystack · NGN' : 'Crypto · USD'}
                       </span>
                     </div>
 
-                    <div>
-                      <div className="text-sm font-semibold text-slate-100">${Number(plan.amount).toFixed(2)}</div>
-                      <div className="text-[11px] text-emerald-400 font-mono mt-0.5">
-                        ₦{plan.naira_price?.toLocaleString()}
+                    <div className="mb-5">
+                      <h2 id="subscription-modal-title" className="text-2xl font-bold tracking-tight text-white">
+                        Select your plan
+                      </h2>
+                      <p className="mt-1.5 text-sm text-slate-400">
+                        Choose the subscription duration that works for you.
+                      </p>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      {plans.map((plan, index) => {
+                        const isSelected = selectedPlanKey === plan.plan_key;
+                        const price = selectedMethod === 'paystack'
+                          ? `₦${Number(plan.naira_price || 0).toLocaleString()}`
+                          : `$${Number(plan.amount || 0).toFixed(2)}`;
+
+                        return (
+                          <motion.button
+                            key={plan.plan_key}
+                            type="button"
+                            onClick={() => setSelectedPlanKey(plan.plan_key)}
+                            whileHover={reduceMotion ? undefined : { y: -3 }}
+                            whileTap={reduceMotion ? undefined : { scale: 0.985 }}
+                            initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.25, delay: index * 0.06, ease }}
+                            aria-pressed={isSelected}
+                            className={`relative flex min-h-[150px] flex-col rounded-2xl border p-4 text-left transition-all focus:outline-none focus:ring-2 focus:ring-orange-300/50 ${
+                              isSelected
+                                ? 'border-orange-400/70 bg-orange-400/[0.09] shadow-lg shadow-orange-500/[0.08]'
+                                : 'border-white/[0.08] bg-white/[0.025] hover:border-white/20 hover:bg-white/[0.045]'
+                            }`}
+                          >
+                            {isSelected && (
+                              <motion.span
+                                layoutId="selected-plan-indicator"
+                                className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-orange-400 text-slate-950"
+                              >
+                                <CheckCircle2 size={13} />
+                              </motion.span>
+                            )}
+                            <span className={`pr-6 text-xs font-semibold ${isSelected ? 'text-orange-200' : 'text-slate-300'}`}>
+                              {plan.name}
+                            </span>
+                            <span className="mt-5 text-2xl font-bold tracking-tight text-white">{price}</span>
+                            <span className="mt-1 inline-flex items-center gap-1.5 text-[11px] text-slate-500">
+                              <Clock3 size={12} /> {plan.days} days
+                            </span>
+                          </motion.button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="mt-5 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4">
+                      <div className="mb-3 flex items-center gap-2 text-xs font-semibold text-white">
+                        <BadgeCheck size={16} className="text-emerald-300" />
+                        Included with your subscription
                       </div>
-                      <div className="text-[10px] text-slate-500 mt-1 font-mono">Duration: {plan.days} days</div>
+                      <div className="space-y-2.5 text-xs leading-5 text-slate-400">
+                        <div className="flex items-start gap-2.5">
+                          <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-400" />
+                          <span>{isEaPlan ? 'Automated MT5 Client Bridge & API Token Access' : '24/7 access to Telegram Signal Broadcast Channel'}</span>
+                        </div>
+                        <div className="flex items-start gap-2.5">
+                          <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-400" />
+                          <span>Elite v4.15 Structural Engine</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
 
-            <div className="bg-slate-950 p-4 rounded-md border border-slate-800 space-y-2 text-xs text-slate-300">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>{isEaPlan ? 'Includes Automated MT5 Client Bridge & API Token Access' : '24/7 Access to Telegram Signal Broadcast Channel'}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Elite v4.15 Structural Engine</span>
-              </div>
-            </div>
+                    <div className="mt-5 rounded-2xl border border-orange-400/15 bg-gradient-to-r from-orange-400/[0.08] to-transparent p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">Your selection</p>
+                          <p className="mt-1 text-sm font-semibold text-white">{activePlan?.name || 'Select a plan'}</p>
+                        </div>
+                        <p className="text-xl font-bold text-orange-200">
+                          {activePlan
+                            ? selectedMethod === 'paystack'
+                              ? `₦${Number(activePlan.naira_price || 0).toLocaleString()}`
+                              : `$${Number(activePlan.amount || 0).toFixed(2)}`
+                            : '—'}
+                        </p>
+                      </div>
+                    </div>
 
-            {/* Payment Action Buttons */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-              {/* Paystack / Fiat Button */}
-              <button
-                onClick={handlePaystackCheckout}
-                disabled={isBusy || !activePlan}
-                className="w-full py-3.5 bg-orange-500 hover:bg-orange-600 text-slate-950 font-semibold rounded-md text-xs sm:text-sm transition-all shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                {processingPaystack ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Connecting Paystack...</span>
-                  </>
-                ) : (
-                  <>
-                    <CreditCard className="w-4 h-4" />
-                    <span>Pay ₦{activePlan?.naira_price?.toLocaleString()} (Card)</span>
-                  </>
+                    <motion.button
+                      type="button"
+                      onClick={handleCheckout}
+                      disabled={processing || !activePlan}
+                      whileHover={reduceMotion || processing ? undefined : { y: -2 }}
+                      whileTap={reduceMotion || processing ? undefined : { scale: 0.99 }}
+                      className={`mt-4 flex w-full items-center justify-center gap-2 rounded-xl px-5 py-4 text-sm font-bold text-slate-950 shadow-lg transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                        selectedMethod === 'paystack'
+                          ? 'bg-gradient-to-r from-orange-400 to-amber-400 shadow-orange-500/15 hover:from-orange-300 hover:to-amber-300'
+                          : 'bg-gradient-to-r from-amber-300 to-yellow-400 shadow-amber-500/15 hover:from-amber-200 hover:to-yellow-300'
+                      }`}
+                    >
+                      {processing ? (
+                        <>
+                          <Loader2 size={17} className="animate-spin" />
+                          Connecting to {selectedMethod === 'paystack' ? 'Paystack' : 'NOWPayments'}...
+                        </>
+                      ) : (
+                        <>
+                          <LockKeyhole size={16} />
+                          Continue to secure payment
+                          <ArrowRight size={16} />
+                        </>
+                      )}
+                    </motion.button>
+                    <p className="mt-3 flex items-center justify-center gap-1.5 text-center text-[10px] text-slate-500">
+                      <ShieldCheck size={12} /> Payment is processed securely by {selectedMethod === 'paystack' ? 'Paystack' : 'NOWPayments'}.
+                    </p>
+                  </motion.div>
                 )}
-              </button>
-
-              {/* Crypto / NOWPayments Button */}
-              <button
-                onClick={handleCryptoCheckout}
-                disabled={isBusy || !activePlan}
-                className="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 font-semibold rounded-md text-xs sm:text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                {processingCrypto ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Generating Invoice...</span>
-                  </>
-                ) : (
-                  <>
-                    <Coins className="w-4 h-4" />
-                    <span>Pay ${Number(activePlan?.amount || 0).toFixed(2)} (Crypto)</span>
-                  </>
-                )}
-              </button>
+              </AnimatePresence>
             </div>
-          </div>
-        )}
 
-      </div>
-    </div>
+            <div className="relative flex items-center justify-center gap-2 border-t border-white/[0.06] px-5 py-3 text-[10px] text-slate-600">
+              <ShieldCheck size={12} />
+              Secure checkout · Hoba Labs
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 
 export default SubscriptionModal;
-
-
-
-
-// import React, { useState, useEffect } from 'react';
-// import { getSubscriptionPlansApi, initializeSubscriptionPaymentApi } from '../../services/api';
-// import { X, CheckCircle2, Loader2, LayersPlus } from 'lucide-react';
-// import { toast } from 'react-toastify';
-
-// const SubscriptionModal = ({ isOpen, onClose }) => {
-//   const [plans, setPlans] = useState([]);
-//   const [selectedPlanKey, setSelectedPlanKey] = useState('');
-//   const [loading, setLoading] = useState(true);
-//   const [processing, setProcessing] = useState(false);
-//   const [isVisible, setIsVisible] = useState(false);
-
-//   useEffect(() => {
-//     if (isOpen) {
-//       setIsVisible(true);
-//       loadPlans();
-//     } else {
-//       const timer = setTimeout(() => setIsVisible(false), 300); // match transition duration
-//       return () => clearTimeout(timer);
-//     }
-//   }, [isOpen]);
-
-//   const loadPlans = async () => {
-//     setLoading(true);
-//     try {
-//       const data = await getSubscriptionPlansApi();
-//       if (data.success && data.plans?.length > 0) {
-//         setPlans(data.plans);
-//         setSelectedPlanKey(data.plans[0].plan_key);
-//       }
-//     } catch (err) {
-//       console.error('Failed to load plans:', err);
-//       toast.error(err.message || 'Could not load subscription packages.');
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const handleCheckout = async () => {
-//     if (!selectedPlanKey) {
-//       toast.error('Please select a subscription plan.');
-//       return;
-//     }
-
-//     setProcessing(true);
-//     try {
-//       const data = await initializeSubscriptionPaymentApi(selectedPlanKey);
-
-//       if (data.success && data.authorization_url) {
-//         window.location.href = data.authorization_url;
-//       }
-//     } catch (err) {
-//       console.error('Checkout error:', err);
-//       toast.error(err.message || 'Failed to start payment session.');
-//       setProcessing(false);
-//     }
-//   };
-
-//   if (!isOpen && !isVisible) return null;
-
-//   const activePlan = plans.find(p => p.plan_key === selectedPlanKey);
-//   const isEaPlan = selectedPlanKey.includes('ea') || selectedPlanKey.includes('bundle');
-
-//   return (
-//     <div className={`fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all duration-300 ${isOpen ? 'bg-black/85 backdrop-blur-sm opacity-100' : 'bg-black/0 backdrop-blur-none opacity-0 pointer-events-none'}`}>
-//       <div 
-//         className={`bg-slate-900 border-t sm:border border-slate-800 rounded-t-2xl sm:rounded-md max-w-2xl w-full p-5 sm:p-6 relative shadow-2xl max-h-[90vh] overflow-y-auto transition-transform duration-300 ease-out ${
-//           isOpen ? 'translate-y-0 opacity-100' : 'translate-y-full sm:translate-y-8 opacity-0'
-//         }`}
-//       >
-        
-//         {/* Mobile Drag Indicator Bar */}
-//         <div className="w-12 h-1.5 bg-slate-700 rounded-full mx-auto mb-4 sm:hidden" />
-
-//         <button 
-//           onClick={onClose}
-//           className="absolute top-4 right-4 sm:top-5 sm:right-5 text-slate-400 hover:text-slate-100 bg-slate-800/50 p-2 rounded-full transition-colors z-10"
-//         >
-//           <X className="w-4 h-4" />
-//         </button>
-
-//         <div className="text-center mb-5 sm:mb-6">
-//           <div className="w-12 h-12 bg-orange-500/10 border border-orange-500/20 text-orange-400 rounded-md flex items-center justify-center mx-auto mb-3">
-//             <LayersPlus className="w-6 h-6"/>
-//           </div>
-//           <h2 className="text-lg sm:text-xl font-semibold text-slate-100">Upgrade Hoba Labs Access</h2>
-//           <p className="text-xs text-slate-400 mt-1 px-4">Choose between manual Telegram Signal streams or 100% automated MT5 EA execution.</p>
-//         </div>
-
-//         {loading ? (
-//           <div className="py-12 flex items-center justify-center space-x-2 text-slate-400 text-xs">
-//             <Loader2 className="w-5 h-5 animate-spin text-orange-400" />
-//             <span>Loading secure plans...</span>
-//           </div>
-//         ) : (
-//           <div className="space-y-4 sm:space-y-5">
-//             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-//               {plans.map((plan) => {
-//                 const isSelected = selectedPlanKey === plan.plan_key;
-//                 const planIsEa = plan.plan_key.includes('ea') || plan.plan_key.includes('bundle');
-                
-//                 return (
-//                   <div
-//                     key={plan.plan_key}
-//                     onClick={() => setSelectedPlanKey(plan.plan_key)}
-//                     className={`p-4 rounded-md border cursor-pointer transition-all flex flex-col justify-between ${
-//                       isSelected 
-//                         ? 'bg-orange-500/10 border-orange-500 text-slate-100 shadow-lg shadow-orange-500/10' 
-//                         : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
-//                     }`}
-//                   >
-//                     <div className="flex items-center justify-between mb-2">
-//                       <span className={`text-xs font-semibold ${isSelected ? 'text-orange-400' : 'text-slate-200'}`}>
-//                         {plan.name}
-//                       </span>
-//                       <span className={`text-[9px] px-2 py-0.5 rounded font-mono uppercase ${planIsEa ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 'bg-slate-900 text-slate-300 border border-slate-800'}`}>
-//                         {planIsEa ? 'Auto EA' : 'Signals'}
-//                       </span>
-//                     </div>
-
-//                     <div>
-//                       <div className="text-sm font-semibold text-slate-100">${Number(plan.amount).toFixed(2)}</div>
-//                       <div className="text-[11px] text-emerald-400 font-mono mt-0.5">
-//                         ₦{plan.naira_price?.toLocaleString()}
-//                       </div>
-//                       <div className="text-[10px] text-slate-500 mt-1 font-mono">Duration: {plan.days} days</div>
-//                     </div>
-//                   </div>
-//                 );
-//               })}
-//             </div>
-
-//             <div className="bg-slate-950 p-4 rounded-md border border-slate-800 space-y-2 text-xs text-slate-300">
-//               <div className="flex items-center gap-2">
-//                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-//                 <span>{isEaPlan ? 'Includes Automated MT5 Client Bridge & API Token Access' : '24/7 Access to Telegram Signal Broadcast Channel'}</span>
-//               </div>
-//               <div className="flex items-center gap-2">
-//                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-//                 <span>Elite v4.15 Structural Engine</span>
-//               </div>
-//             </div>
-
-//             <button
-//               onClick={handleCheckout}
-//               disabled={processing || !activePlan}
-//               className="w-full py-3.5 bg-orange-500 hover:bg-orange-600 text-slate-950 font-semibold rounded-md text-sm transition-all shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 disabled:opacity-50"
-//             >
-//               {processing ? (
-//                 <>
-//                   <Loader2 className="w-4 h-4 animate-spin" />
-//                   <span>Preparing secure checkout...</span>
-//                 </>
-//               ) : (
-//                 <span>Pay ₦{activePlan?.naira_price?.toLocaleString()} — {activePlan?.name}</span>
-//               )}
-//             </button>
-//           </div>
-//         )}
-
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default SubscriptionModal;
