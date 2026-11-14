@@ -94,6 +94,18 @@ export async function verifySubscriptionPaymentApi(reference) {
   return data;
 }
 
+export async function initializeCryptoPaymentApi(planKey) {
+  const response = await fetch(`${API_BASE_URL}/subscription/initialize-crypto`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeader() },
+    body: JSON.stringify({ plan_key: planKey }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'Failed to initialize crypto payment');
+  return data;
+}
+
 /**
  * Fetches the user's subscription payment history ledger
  */
