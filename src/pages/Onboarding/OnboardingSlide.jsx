@@ -84,16 +84,6 @@ export default function OnboardingSlide({ slide, selectedData, onSelectOption })
       {/* Slide 5: Animated Chart Performance Card (Branded with Orange Theme) */}
       {slide.type === 'animated_chart' && (
         <div className="w-full bg-[#0b0f19] border border-slate-800/80 rounded-2xl p-5 my-2 shadow-2xl relative overflow-hidden text-left">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <span className="text-[10px] font-mono tracking-wider text-orange-400 uppercase font-semibold">Live Performance</span>
-              <h3 className="text-xl font-extrabold text-white font-mono mt-0.5">$742,540,918.00</h3>
-            </div>
-            <div className="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-orange-400 shadow-inner">
-              <TrendingUp className="w-5 h-5" />
-            </div>
-          </div>
-
           {/* Animated Bar Chart Graphic matching app theme */}
           <div className="h-28 flex items-end justify-between pt-6 px-1 space-x-2">
             {[35, 65, 45, 85, 60, 95, 75].map((height, i) => (

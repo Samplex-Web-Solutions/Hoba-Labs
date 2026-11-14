@@ -3,13 +3,13 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { registerApi } from '../../services/api';
 import { Link } from 'react-router-dom';
-import logo from '../../assets/images/hoba-labs-logo-horizontal.png';
-import { User, Mail, Phone, Lock, ShieldCheck, ArrowRight, Gift, Check, Eye, EyeOff } from 'lucide-react';
+import { User, Mail, Phone, Lock, ShieldCheck, ArrowRight, ArrowLeft, Gift, Check, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'react-toastify';   
 import BarLoader from '../../components/common/BarLoader';
 
 function Register() {
   const [searchParams] = useSearchParams();
+  const [step, setStep] = useState(1); // Track current registration step (1 or 2)
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -67,6 +67,15 @@ function Register() {
     setFormData({ ...formData, [name]: value });
   };
 
+  const handleNextStep = (e) => {
+    e.preventDefault();
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone) {
+      toast.error('Please fill in all required fields.');
+      return;
+    }
+    setStep(2);
+  };
+
   const handleRegister = async (e) => {
     e.preventDefault();
 
@@ -104,168 +113,211 @@ function Register() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-center px-6 py-12 select-none">
-      <div className="max-w-md mx-auto w-full space-y-2">
+      <div className="max-w-md mx-auto w-full space-y-4">
         <div className="text-center space-y-1">
-          <img src={logo} alt="Hoba Labs Logo" className="mx-auto h-28" />
+          <p className="text-xs font-mono text-slate-400 pt-1">
+            {step === 1 ? 'Step 1: Personal Information' : 'Step 2: Security & Referral'}
+          </p>
+          {/* Step Indicator Header */}
+          <div className="flex items-center justify-center space-x-2 pt-2">
+            <div className={`h-1.5 w-12 rounded-full transition-colors ${step === 1 ? 'bg-orange-500' : 'bg-emerald-500'}`} />
+            <div className={`h-1.5 w-12 rounded-full transition-colors ${step === 2 ? 'bg-orange-500' : 'bg-slate-800'}`} />
+          </div>
+
         </div>
-        <form onSubmit={handleRegister} className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl backdrop-blur-md">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">First Name</label>
-              <div className="relative flex items-center">
-                <User className="absolute left-3 w-4 h-4 text-slate-500" />
-                <input
-                  type="text"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  placeholder="John"
-                  required
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-orange-500 transition-colors"
-                />
+
+        <form onSubmit={step === 1 ? handleNextStep : handleRegister} className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl backdrop-blur-md">
+          
+          {/* STEP 1: Personal Details */}
+          {step === 1 && (
+            <div className="space-y-4 animate-fadeIn">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">First Name</label>
+                  <div className="relative flex items-center">
+                    <User className="absolute left-3 w-4 h-4 text-slate-500" />
+                    <input
+                      type="text"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      placeholder="John"
+                      required
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-orange-500 transition-colors"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">Last Name</label>
+                  <div className="relative flex items-center">
+                    <User className="absolute left-3 w-4 h-4 text-slate-500" />
+                    <input
+                      type="text"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      placeholder="Doe"
+                      required
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-orange-500 transition-colors"
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="space-y-1">
-              <label className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">Last Name</label>
-              <div className="relative flex items-center">
-                <User className="absolute left-3 w-4 h-4 text-slate-500" />
-                <input
-                  type="text"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  placeholder="Doe"
-                  required
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-orange-500 transition-colors"
-                />
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">Email Address</label>
+                <div className="relative flex items-center">
+                  <Mail className="absolute left-3 w-4 h-4 text-slate-500" />
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="john.doe@example.com"
+                    required
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-orange-500 transition-colors"
+                  />
+                </div>
               </div>
-            </div>
-          </div>
 
-          <div className="space-y-1">
-            <label className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">Email Address (For Billing)</label>
-            <div className="relative flex items-center">
-              <Mail className="absolute left-3 w-4 h-4 text-slate-500" />
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="john.doe@example.com"
-                required
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-orange-500 transition-colors"
-              />
-            </div>
-          </div>
+              <div className="space-y-1">
+                <label className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">WhatsApp/Phone Number</label>
+                <div className="relative flex items-center">
+                  <Phone className="absolute left-3 w-4 h-4 text-slate-500" />
+                  <input
+                    type="text"
+                    name="phone"
+                    autoComplete="off"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    placeholder="+2349057973810"
+                    required
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-orange-500 font-mono transition-colors"
+                  />
+                </div>
+              </div>
 
-          <div className="space-y-1">
-            <label className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">WhatsApp Phone Number</label>
-            <div className="relative flex items-center">
-              <Phone className="absolute left-3 w-4 h-4 text-slate-500" />
-              <input
-                type="text"
-                name="phone"
-                autoComplete="off"
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="+2349057973810"
-                required
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-orange-500 font-mono transition-colors"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">Password</label>
-            <div className="relative flex items-center">
-              <Lock className="absolute left-3 w-4 h-4 text-slate-500" />
-              <input
-                type={showPassword ? 'text' : 'password'}
-                name="password"
-                autoComplete="new-password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="••••••••"
-                required
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-10 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-orange-500 transition-colors"
-              />
               <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 text-slate-500 hover:text-slate-300"
+                type="submit"
+                className="w-full mt-2 py-3 px-4 rounded-xl font-semibold bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 hover:opacity-95 active:scale-[0.98] transition-all flex items-center justify-center space-x-2 shadow-lg shadow-orange-500/20 text-sm"
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                <span>Continue</span>
+                <ArrowRight className="w-4 h-4" />
               </button>
             </div>
+          )}
 
-            {/* Password Strength Indicator Bars */}
-            {formData.password && (
-              <div className="space-y-3 pt-2">
-                <div className="grid grid-cols-5 gap-1.5">
-                  {[1, 2, 3, 4, 5].map((index) => (
-                    <div
-                      key={index}
-                      className={`h-1 rounded-full transition-all duration-300 ${
-                        index <= metCriteriaCount ? strength.color : 'bg-slate-800'
-                      }`}
-                    />
-                  ))}
+          {/* STEP 2: Password & Referral */}
+          {step === 2 && (
+            <div className="space-y-4 animate-fadeIn">
+              <div className="space-y-2">
+                <label className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">Password</label>
+                <div className="relative flex items-center">
+                  <Lock className="absolute left-3 w-4 h-4 text-slate-500" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    autoComplete="new-password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="••••••••"
+                    required
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-10 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-orange-500 transition-colors"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 text-slate-500 hover:text-slate-300"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
 
-                {strength.label && (
-                  <p className={`text-xs font-semibold ${
-                    strength.label === 'Strong' ? 'text-emerald-400' : strength.label === 'Medium' ? 'text-amber-400' : 'text-red-400'
-                  }`}>
-                    {strength.label}
-                  </p>
-                )}
-
-                {/* Password Criteria Checklist */}
-                <div className="space-y-1.5 pt-1 text-xs">
-                  {passwordCriteria.map((criterion, idx) => (
-                    <div key={idx} className="flex items-center space-x-2">
-                      <div className={`w-4 h-4 rounded-full flex items-center justify-center ${criterion.met ? 'text-emerald-400' : 'text-slate-600'}`}>
-                        <Check className="w-3.5 h-3.5" />
-                      </div>
-                      <span className={criterion.met ? 'text-slate-300' : 'text-slate-500'}>
-                        {criterion.label}
-                      </span>
+                {/* Smooth Animated Password Strength & Criteria Checklist Container */}
+                <div
+                  className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                    formData.password ? 'opacity-100 max-h-96 pt-2' : 'opacity-0 max-h-0 pt-0'
+                  }`}
+                >
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-5 gap-1.5">
+                      {[1, 2, 3, 4, 5].map((index) => (
+                        <div
+                          key={index}
+                          className={`h-1 rounded-full transition-all duration-300 ${
+                            index <= metCriteriaCount ? strength.color : 'bg-slate-800'
+                          }`}
+                        />
+                      ))}
                     </div>
-                  ))}
+
+                    {strength.label && (
+                      <p className={`text-xs font-semibold transition-colors duration-200 ${
+                        strength.label === 'Strong' ? 'text-emerald-400' : strength.label === 'Medium' ? 'text-amber-400' : 'text-red-400'
+                      }`}>
+                        {strength.label}
+                      </p>
+                    )}
+
+                    {/* Password Criteria Checklist */}
+                    <div className="space-y-1.5 pt-1 text-xs">
+                      {passwordCriteria.map((criterion, idx) => (
+                        <div key={idx} className="flex items-center space-x-2 transition-all duration-200">
+                          <div className={`w-4 h-4 rounded-full flex items-center justify-center transition-colors duration-200 ${criterion.met ? 'text-emerald-400' : 'text-slate-600'}`}>
+                            <Check className="w-3.5 h-3.5" />
+                          </div>
+                          <span className={`transition-colors duration-200 ${criterion.met ? 'text-slate-300' : 'text-slate-500'}`}>
+                            {criterion.label}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
-            )}
-          </div>
 
-          <div className="space-y-1 pt-1">
-            <label className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">Referral Code (Optional)</label>
-            <div className="relative flex items-center">
-              <Gift className="absolute left-3 w-4 h-4 text-slate-500" />
-              <input
-                type="text"
-                name="refCode"
-                value={formData.refCode}
-                onChange={handleChange}
-                placeholder="HOBA-XXX0000"
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-orange-500 font-mono uppercase transition-colors"
-              />
+              <div className="space-y-1 pt-1">
+                <label className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">Referral Code (Optional)</label>
+                <div className="relative flex items-center">
+                  <Gift className="absolute left-3 w-4 h-4 text-slate-500" />
+                  <input
+                    type="text"
+                    name="refCode"
+                    value={formData.refCode}
+                    onChange={handleChange}
+                    placeholder="HOBA-XXX0000"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-orange-500 font-mono uppercase transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="flex space-x-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="w-1/3 py-3 px-4 rounded-xl font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 active:scale-[0.98] transition-all flex items-center justify-center space-x-1 text-xs"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Back</span>
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={loading || metCriteriaCount < 5}
+                  className="w-2/3 py-3 px-4 rounded-xl font-semibold bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 hover:opacity-95 active:scale-[0.98] transition-all flex items-center justify-center space-x-2 shadow-lg shadow-orange-500/20 disabled:opacity-50 text-sm"
+                >
+                  {loading ? (
+                    <BarLoader />
+                  ) : (
+                    <>
+                      <span>Create Account</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading || metCriteriaCount < 5}
-            className="w-full mt-2 py-3 px-4 rounded-xl font-semibold bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 hover:opacity-95 active:scale-[0.98] transition-all flex items-center justify-center space-x-2 shadow-lg shadow-orange-500/20 disabled:opacity-50 text-sm"
-          >
-            {loading ? (
-              <BarLoader />
-            ) : (
-              <>
-                <span>Create Account</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
+          )}
           
           <div className="text-center pt-2">
             <p className="text-xs text-slate-400">

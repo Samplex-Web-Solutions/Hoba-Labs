@@ -63,7 +63,7 @@ function Login() {
     <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-center px-6 py-12 select-none">
       <div className="max-w-md mx-auto w-full space-y-1">
         <div className="text-center space-y-1">
-          <img src={logo} alt="Hoba Labs Logo" className="mx-auto h-28" />
+          <img src={logo} alt="Hoba Labs Logo" className="mx-auto h-20" />
         </div>
 
         <form onSubmit={handleLogin} className="bg-slate-900/60 border border-slate-800 rounded-2xl pb-6 px-6 space-y-4 shadow-xl backdrop-blur-md">

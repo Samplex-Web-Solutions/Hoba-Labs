@@ -127,7 +127,7 @@ const Settings = () => {
               </div>
               <button
                 onClick={() => setIsSubModalOpen(true)}
-                className="bg-orange-500 hover:bg-orange-600 text-slate-950 font-bold px-4 py-2.5 rounded-md text-xs transition-colors shadow-lg shadow-orange-500/10"
+                className={`${isPaid ? 'hidden' : 'bg-orange-500 hover:bg-orange-600'} text-slate-950 font-bold px-4 py-2.5 rounded-md text-xs transition-colors shadow-lg shadow-orange-500/10`}
               >
                 {isPaid ? 'Manage Subscription' : 'Upgrade Plan'}
               </button>
@@ -148,9 +148,10 @@ const Settings = () => {
                   <input
                     type="text"
                     name="firstName"
+                    disabled
                     value={profileData.firstName}
                     onChange={handleProfileChange}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-orange-500/50"
+                    className="w-full bg-slate-950 border cursor-not-allowed border-slate-800 rounded-md px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-orange-500/50"
                   />
                 </div>
                 <div>
@@ -158,9 +159,10 @@ const Settings = () => {
                   <input
                     type="text"
                     name="lastName"
+                    disabled
                     value={profileData.lastName}
                     onChange={handleProfileChange}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-orange-500/50"
+                    className="w-full bg-slate-950 border cursor-not-allowed border-slate-800 rounded-md px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-orange-500/50"
                   />
                 </div>
               </div>

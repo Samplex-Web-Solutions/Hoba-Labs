@@ -53,7 +53,7 @@ function Onboarding({ onComplete }) {
         onComplete();
       } catch (err) {
         console.error("Onboarding failed:", err);
-        toast.error(err.message || 'Failed to save onboarding preferences.');
+        toast.error(err.message || 'error saving data.');
       } finally {
         setLoading(false);
       }
@@ -68,19 +68,6 @@ function Onboarding({ onComplete }) {
 
   return (
     <div className="flex flex-col justify-between h-screen w-full bg-slate-950 text-white select-none overflow-hidden">
-      <div className="flex items-center justify-between px-6 pt-6">
-        <div className="flex items-center space-x-2">
-          <div className="w-3 h-3 rounded-full bg-orange-500 animate-ping" />
-          <span className="text-xs font-mono tracking-wider text-slate-400 uppercase">Hoba Labs Engine</span>
-        </div>
-        <button
-          onClick={onComplete}
-          className="text-xs text-slate-500 hover:text-slate-300 font-medium transition-colors"
-        >
-          Skip
-        </button>
-      </div>
-
       <div className="flex-1 relative overflow-hidden flex items-center justify-center">
         <AnimatePresence mode="wait">
           <OnboardingSlide

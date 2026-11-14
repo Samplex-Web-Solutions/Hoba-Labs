@@ -91,7 +91,11 @@ export default function EABridgeSettings() {
         <ShieldAlert className="w-5 h-5 text-orange-400 shrink-0 mt-0.5" />
         <div>
           <strong className="text-slate-200 block mb-1">Important MT5 Terminal Setting:</strong>
-          Make sure to enable automated web requests in MetaTrader 5 by going to <code className="text-orange-400 bg-slate-900 px-1 py-0.5 rounded">Tools -&gt; Options -&gt; Expert Advisors</code> and checking <code className="text-orange-400 bg-slate-900 px-1 py-0.5 rounded">Allow WebRequest for listed URL</code>, then add your Hostinger VPS domain: <code className="text-emerald-400 bg-slate-900 px-1 py-0.5 rounded">https://hobalabs-api.absg-ohos.cloud</code>.
+          Make sure to enable automated web requests in MetaTrader 5 by going to
+           <code className="text-orange-400 bg-slate-900 px-1 py-0.5 rounded">Tools -&gt; Options -&gt; Expert Advisors</code>
+            and checking <code className="text-orange-400 bg-slate-900 px-1 py-0.5 rounded">Allow WebRequest for listed URL
+              </code>, then add your Hostinger VPS domain: <code className="text-emerald-400 bg-slate-900 px-1 py-0.5 rounded">
+                https://hobalabs.......</code>.
         </div>
       </div>
     </div>

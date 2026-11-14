@@ -24,15 +24,24 @@ const Dashboard = ({ onOpenSubscriptionModal }) => {
 
   // Safely extract subscription object properties
   const sub = user?.subscription || {};
-  const subStatus = sub.status || 'inactive';
-  const isPaid = subStatus === 'active' || subStatus === 'monthly' || subStatus === 'annual';
-  const isTrialing = subStatus === 'trialing';
-  
-  const planDisplay = isPaid 
-    ? (sub.planType || 'Pro Plan') 
-    : isTrialing 
-    ? `Free Trial (${sub.remainingDays ?? 3} days left)` 
-    : 'Free Tier';
+const subStatus = sub.status || 'inactive';
+const isPaid = subStatus === 'active' || subStatus === 'monthly' || subStatus === 'annual';
+const isTrialing = subStatus === 'trialing';
+
+// Format the date cleanly (e.g., "Nov 24, 2026" or "November 24, 2026")
+const formattedTrialDate = sub?.trialEndsAt 
+  ? new Date(sub.trialEndsAt).toLocaleDateString('en-US', {
+      month: 'short', // Use 'long' for "November"
+      day: 'numeric',
+      year: 'numeric'
+    })
+  : '';
+
+const planDisplay = isPaid 
+  ? (sub.planType || 'Pro Plan') 
+  : isTrialing 
+  ? `Free Trial till (${formattedTrialDate})` 
+  : 'Free Tier';
 
   const referralLink = `${import.meta.env.VITE_FRONTEND_URL}/register?ref=${user?.referralCode}`;
   const bot_url = import.meta.env.VITE_BOT_URL;
@@ -124,7 +133,7 @@ const Dashboard = ({ onOpenSubscriptionModal }) => {
                   <div className="mt-4 rounded-md">
                     <button
                       onClick={() => setIsSubModalOpen(true)}
-                      className="w-full py-2 px-3 bg-orange-500 hover:bg-orange-600 text-slate-950 font-semibold rounded-lg text-xs transition-colors shadow-lg shadow-orange-500/10"
+                      className={`${isPaid ? 'hidden' : 'bg-orange-500 hover:bg-orange-600'} w-full py-2 px-3 text-slate-950 font-semibold rounded-lg text-xs transition-colors shadow-lg shadow-orange-500/10`}
                     >
                       {isPaid ? 'Manage Subscription' : 'Upgrade Plan'}
                     </button>
