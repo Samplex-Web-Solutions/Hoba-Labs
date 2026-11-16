@@ -117,7 +117,6 @@ export async function fetchSubscriptionHistoryApi() {
   return data;
 }
 
-
 export async function fetchEADashboardStatsApi() {
   const response = await fetch(`${API_BASE_URL}/broker/ea-stats`, {
     method: 'GET',
@@ -156,6 +155,17 @@ export async function connectBrokerApi(brokerData) {
   return data;
 }
 
+export async function searchBrokerServersApi(query, platform = 'mt5') {
+  const params = new URLSearchParams({ query, platform });
+  const response = await fetch(`${API_BASE_URL}/broker/servers?${params.toString()}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json', ...authHeader() },
+  });
+
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Failed to search broker servers');
+  return data;
+}
 
 export const fetchTodayCalendar = async () => {
   try {

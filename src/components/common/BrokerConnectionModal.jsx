@@ -1,136 +1,152 @@
-import React, { useState } from 'react';
-import { connectBrokerApi } from '../services/api'; // Import your api helper
-import { useAuthStore } from '../store/authStore';  // Import your auth store
+import React, { useState, useEffect } from 'react';
+import { searchBrokerServersApi } from '../services/api';
+import { Search, Server, Check } from 'lucide-react';
 
-export default function BrokerConnect() {
-  const { user } = useAuthStore(); // Get active user details from your Zustand store
-  
-  const [formData, setFormData] = useState({
-    login: '',
-    password: '',
-    server: '',
-    magic: 897691,
-  });
+export default function BrokerServerCombobox({ value, onChange, theme = 'dark' }) {
+  const [isManual, setIsManual] = useState(false);
+  const [searchTerm, setSearchTerm] = useState(value || '');
+  const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState(null);
-  const [error, setError] = useState(null);
+  const [isOpen, setIsOpen] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage(null);
-    setError(null);
-
-    try {
-      // Call the clean API wrapper
-      const response = await connectBrokerApi({
-        userId: user?.id,
-        email: user?.email,
-        login: formData.login,
-        password: formData.password,
-        server: formData.server
-      });
-
-      if (response.success) {
-        setMessage('Broker account successfully connected and provisioned on MetaApi!');
-        setFormData({ login: '', password: '', server: '' }); // Reset form
-      }
-    } catch (err) {
-      setError(err.message || 'Failed to provision broker account. Please check credentials.');
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (isManual || searchTerm.trim().length < 2) {
+      setSuggestions([]);
+      setIsOpen(false);
+      return;
     }
+
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const data = await searchBrokerServersApi(searchTerm.trim(), 'mt5');
+        if (data.success) {
+          setSuggestions(data.servers || []);
+          setIsOpen(true);
+        }
+      } catch (err) {
+        console.error('[SERVER_SEARCH_ERROR]:', err);
+      } finally {
+        setLoading(false);
+      }
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, isManual]);
+
+  const handleSelect = (serverName) => {
+    setSearchTerm(serverName);
+    onChange(serverName);
+    setIsOpen(false);
   };
+
+  const isDark = theme === 'dark';
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
-      <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900">Connect MetaTrader 5 Broker</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Link your demo or live broker account to enable automated Hoba Labs signal execution.
-        </p>
+    <div className="space-y-1.5 w-full">
+      <div className="flex justify-between items-center text-xs">
+        <span className={`font-medium ${isDark ? 'text-slate-300' : 'text-gray-600 uppercase tracking-wider font-semibold'}`}>
+          Broker / Prop Firm Server
+        </span>
+        <button
+          type="button"
+          onClick={() => {
+            setIsManual(!isManual);
+            setIsOpen(false);
+          }}
+          className="text-orange-400 hover:text-orange-300 text-[11px] font-medium underline"
+        >
+          {isManual ? '← Search server list' : 'Enter server manually'}
+        </button>
       </div>
 
-      {message && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl">
-          {message}
-        </div>
-      )}
+      {isManual ? (
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            onChange(e.target.value);
+          }}
+          placeholder="e.g. Exness-MT5Trial11 or FundedNext-Server 2"
+          required
+          className={
+            isDark
+              ? 'w-full rounded-xl border border-slate-700/80 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-orange-400 focus:ring-4 focus:ring-orange-400/10'
+              : 'w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm text-gray-800 transition-all'
+          }
+        />
+      ) : (
+        <div className="relative w-full">
+          <div className="relative">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                onChange(e.target.value);
+              }}
+              onFocus={() => suggestions.length > 0 && setIsOpen(true)}
+              placeholder="Search server (e.g. FTMO, Exness, FundedNext)"
+              required
+              className={
+                isDark
+                  ? 'w-full rounded-xl border border-slate-700/80 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-orange-400 focus:ring-4 focus:ring-orange-400/10'
+                  : 'w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm text-gray-800 transition-all'
+              }
+            />
+          </div>
 
-      {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
-          {error}
-        </div>
-      )}
-      
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">
-            MT5 Account Login newly sent
-          </label>
-          <input
-            type="text"
-            name="login"
-            value={formData.login}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm text-gray-800 transition-all"
-            placeholder="e.g. 84930211"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">
-            Master / Trading Password
-          </label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm text-gray-800 transition-all"
-            placeholder="••••••••"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">
-            Broker Server Name
-          </label>
-          <input
-            type="text"
-            name="server"
-            value={formData.server}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm text-gray-800 transition-all"
-            placeholder="e.g. Deriv-Demo or ICMarketsSC-Demo"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full mt-2 py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-colors text-sm shadow-sm disabled:opacity-50 flex items-center justify-center"
-        >
-          {loading ? (
-            <span className="flex items-center space-x-2">
-              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Provisioning Container...
-            </span>
-          ) : (
-            'Connect Broker Account'
+          {isOpen && (
+            <div
+              className={`absolute z-30 w-full mt-1.5 rounded-xl border shadow-xl max-h-56 overflow-y-auto ${
+                isDark ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-gray-200 text-gray-800'
+              }`}
+            >
+              {loading ? (
+                <div className="p-3 text-xs text-slate-400">Searching servers...</div>
+              ) : suggestions.length === 0 ? (
+                <div
+                  onClick={() => setIsManual(true)}
+                  className="p-3 text-xs text-slate-400 hover:bg-slate-800/50 cursor-pointer"
+                >
+                  No match found. Click here to enter server string manually.
+                </div>
+              ) : (
+                suggestions.map((item) => (
+                  <div
+                    key={item.server_name}
+                    onClick={() => handleSelect(item.server_name)}
+                    className={`p-3 border-b flex items-center justify-between cursor-pointer transition ${
+                      isDark
+                        ? 'border-slate-800 hover:bg-slate-800/70'
+                        : 'border-gray-100 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div>
+                      <div className="text-sm font-semibold">{item.server_name}</div>
+                      <div className={`text-xs ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                        {item.company_name}
+                      </div>
+                    </div>
+                    <span
+                      className={`text-[10px] px-2 py-0.5 rounded font-mono uppercase ${
+                        item.type === 'prop_firm'
+                          ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                          : item.type === 'evaluation'
+                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                          : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                      }`}
+                    >
+                      {item.type.replace('_', ' ')}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
           )}
-        </button>
-      </form>
+        </div>
+      )}
     </div>
   );
 }

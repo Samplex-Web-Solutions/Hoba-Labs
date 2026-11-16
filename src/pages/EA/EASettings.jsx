@@ -6,10 +6,10 @@ import {
   fetchEADashboardStatsApi,
   redeemEALicenseApi,
 } from '../../services/api';
+import BrokerServerCombobox from './BrokerServerCombobox';
 import {
   Activity,
   ArrowUpRight,
-  CheckCircle2,
   ChevronRight,
   CircleDollarSign,
   Cpu,
@@ -204,7 +204,6 @@ export default function EADashboard() {
       animate="visible"
       className="mx-auto w-full max-w-6xl space-y-6 pb-12"
     >
-      {/* Page heading */}
       <motion.section
         variants={itemVariants}
         className="relative isolate overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900 to-[#21170f] p-6 sm:p-8"
@@ -237,7 +236,6 @@ export default function EADashboard() {
         </div>
       </motion.section>
 
-      {/* Account overview */}
       <motion.section variants={itemVariants} className="space-y-3">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
@@ -288,7 +286,6 @@ export default function EADashboard() {
         </div>
       </motion.section>
 
-      {/* Access / broker panel */}
       {!hasAccess ? (
         <motion.section
           variants={itemVariants}
@@ -416,7 +413,6 @@ export default function EADashboard() {
         </motion.section>
       )}
 
-      {/* Broker connection modal */}
       <AnimatePresence>
         {showBrokerModal && (
           <motion.div
@@ -460,7 +456,7 @@ export default function EADashboard() {
 
               <form onSubmit={handleConnectBroker} className="mt-7 space-y-5">
                 <Field
-                  label="MT5 account login hello"
+                  label="MT5 account login"
                   type="text"
                   inputMode="numeric"
                   value={brokerData.login}
@@ -478,14 +474,12 @@ export default function EADashboard() {
                   placeholder="Enter your MT5 trading password"
                   autoComplete="new-password"
                 />
-                <Field
-                  label="Broker server"
-                  type="text"
+
+                {/* Combobox for Server Search */}
+                <BrokerServerCombobox
                   value={brokerData.server}
-                  onChange={(e) => setBrokerData({ ...brokerData, server: e.target.value })}
-                  required
-                  placeholder="e.g. Deriv-Demo or ICMarketsSC-Demo"
-                  autoComplete="off"
+                  onChange={(serverName) => setBrokerData({ ...brokerData, server: serverName })}
+                  theme="dark"
                 />
 
                 <div className="flex items-start gap-2 rounded-xl border border-slate-800 bg-slate-950/60 p-3">
