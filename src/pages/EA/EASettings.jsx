@@ -168,6 +168,7 @@ export default function EADashboard() {
         login: brokerData.login,
         password: brokerData.password,
         server: brokerData.server,
+        magic: 897691,
       });
 
       if (response.success) {
@@ -459,7 +460,7 @@ export default function EADashboard() {
 
               <form onSubmit={handleConnectBroker} className="mt-7 space-y-5">
                 <Field
-                  label="MT5 account login"
+                  label="MT5 account login hello"
                   type="text"
                   inputMode="numeric"
                   value={brokerData.login}
