@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { searchBrokerServersApi } from '../services/api'; // Adjust path to your api.js file if necessary
+import { searchBrokerServersApi } from '../../services/api';
 import { Server } from 'lucide-react';
 
 export default function BrokerServerCombobox({ value, onChange, theme = 'dark' }) {
