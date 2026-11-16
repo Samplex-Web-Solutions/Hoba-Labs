@@ -8,7 +8,8 @@ export default function BrokerConnect() {
   const [formData, setFormData] = useState({
     login: '',
     password: '',
-    server: ''
+    server: '',
+    magic: 897691,
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
@@ -69,7 +70,7 @@ export default function BrokerConnect() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">
-            MT5 Account Login
+            MT5 Account Login newly sent
           </label>
           <input
             type="text"
