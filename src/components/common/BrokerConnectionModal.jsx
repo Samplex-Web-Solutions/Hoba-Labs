@@ -44,13 +44,13 @@ export default function BrokerConnectionModal({ isOpen, onClose, onSuccess, user
       });
 
       if (response.success) {
-        toast.success('Broker account connected successfully via TickerAll!');
+        toast.success('Account Connected!');
         setBrokerData({ login: '', password: '', server: '', broker: 'mt5' });
         if (onSuccess) onSuccess();
         onClose();
       }
     } catch (err) {
-      toast.error(err.message || 'Failed to connect broker account. Check credentials.');
+      toast.error(err.message || 'Failed to connect account. Check credentials.');
     } finally {
       setConnectingBroker(false);
     }

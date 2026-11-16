@@ -5,7 +5,7 @@ import {
   fetchEADashboardStatsApi,
   redeemEALicenseApi,
 } from '../../services/api';
-import BrokerConnectionModal from '../../components/common/BrokerConnectionModal';
+import BrokerConnectionModal from './BrokerConnectionModal';
 import {
   Activity,
   ArrowUpRight,
@@ -59,7 +59,7 @@ function StatCard({ title, value, caption, icon: Icon, accent = 'orange', valueC
     <motion.div
       variants={itemVariants}
       whileHover={{ y: -3 }}
-      className="group rounded-lg border p-5 border-slate-800/90 bg-slate-900/80 shadow-[0_12px_35px_-24px_rgba(0,0,0,0.8)] transition-colors hover:border-slate-700"
+      className="group rounded-2xl border p-5 border-slate-800/90 bg-slate-900/80 shadow-[0_12px_35px_-24px_rgba(0,0,0,0.8)] transition-colors hover:border-slate-700"
     >
       <div className="flex items-start justify-between gap-3">
         <div>
@@ -96,7 +96,9 @@ export default function EADashboard() {
   const [showBrokerModal, setShowBrokerModal] = useState(false);
   const [isSubModalOpen, setIsSubModalOpen] = useState(false);
 
-  const fetchStats = async () => {
+  // Fetch stats with an optional flag for initial full-page loader
+  const fetchStats = async (isInitial = false) => {
+    if (isInitial) setLoading(true);
     try {
       const data = await fetchEADashboardStatsApi();
       if (data.success) {
@@ -112,12 +114,21 @@ export default function EADashboard() {
     } catch (err) {
       console.error('Failed to fetch EA stats:', err);
     } finally {
-      setLoading(false);
+      if (isInitial) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchStats();
+    // Initial load with loader
+    fetchStats(true);
+
+    // Set up real-time background polling interval (e.g. every 8 seconds)
+    const pollInterval = setInterval(() => {
+      fetchStats(false);
+    }, 8000);
+
+    // Cleanup interval when component unmounts
+    return () => clearInterval(pollInterval);
   }, []);
 
   const handleRedeemKey = async (e) => {
@@ -146,7 +157,7 @@ export default function EADashboard() {
   if (loading) {
     return (
       <div className="flex min-h-[55vh] flex-col items-center justify-center gap-3 text-slate-400">
-        <div className="rounded-lg border border-slate-800 bg-slate-900 p-4">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
           <RefreshCw className="h-6 w-6 animate-spin text-orange-400" />
         </div>
         <p className="text-sm">Preparing your trading dashboard...</p>
@@ -159,17 +170,21 @@ export default function EADashboard() {
       variants={pageVariants}
       initial="hidden"
       animate="visible"
-      className=" space-y-6 p-4 max-w-7xl w-full mx-auto text-left pb-12"
+      className="mx-auto w-full max-w-6xl space-y-6 pb-12"
     >
       <motion.section
         variants={itemVariants}
-        className="relative isolate overflow-hidden rounded-lg border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900 to-[#21170f] p-6 sm:p-8"
+        className="relative isolate overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900 to-[#21170f] p-6 sm:p-8"
       >
         <div className="pointer-events-none absolute -right-16 -top-24 -z-10 h-72 w-72 rounded-full bg-orange-500/10 blur-3xl" />
         <div className="pointer-events-none absolute bottom-0 right-1/4 -z-10 h-32 w-32 rounded-full bg-amber-400/5 blur-3xl" />
 
         <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
           <div className="max-w-2xl">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-400/20 bg-orange-400/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-orange-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_10px_rgba(251,146,60,0.8)]" />
+              Hoba Labs · Automated trading
+            </div>
             <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
               EA Control Centre
             </h1>
@@ -193,11 +208,11 @@ export default function EADashboard() {
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
             <h2 className="text-sm font-semibold text-white">Account overview</h2>
-            <p className="mt-1 text-xs text-slate-500">Your latest connected account metrics</p>
+            <p className="mt-1 text-xs text-slate-500">Your latest connected account metrics (Live Polling Active)</p>
           </div>
           <button
             type="button"
-            onClick={fetchStats}
+            onClick={() => fetchStats(false)}
             className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-400 transition hover:bg-slate-800 hover:text-white"
           >
             <RefreshCw size={13} />
@@ -242,12 +257,12 @@ export default function EADashboard() {
       {!hasAccess ? (
         <motion.section
           variants={itemVariants}
-          className="mx-auto grid w-full max-w-4xl overflow-hidden rounded-lg border border-slate-800 bg-slate-900/90 lg:grid-cols-[0.9fr_1.1fr]"
+          className="mx-auto grid w-full max-w-4xl overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/90 lg:grid-cols-[0.9fr_1.1fr]"
         >
           <div className="relative flex flex-col justify-between overflow-hidden bg-gradient-to-br from-orange-500/15 via-orange-500/5 to-transparent p-6 sm:p-8">
             <div className="pointer-events-none absolute -bottom-16 -left-12 h-48 w-48 rounded-full bg-orange-500/10 blur-3xl" />
             <div>
-              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-lg border border-orange-400/20 bg-orange-400/10 text-orange-300">
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-orange-400/20 bg-orange-400/10 text-orange-300">
                 <Zap size={23} />
               </div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-orange-300">Get started</p>
@@ -275,7 +290,7 @@ export default function EADashboard() {
             <button
               type="button"
               onClick={() => setIsSubModalOpen(true)}
-              className="group flex w-full items-center justify-between rounded-lg bg-gradient-to-r from-orange-500 to-amber-400 px-5 py-4 text-left text-slate-950 shadow-lg shadow-orange-500/10 transition hover:-translate-y-0.5 hover:shadow-orange-500/20"
+              className="group flex w-full items-center justify-between rounded-2xl bg-gradient-to-r from-orange-500 to-amber-400 px-5 py-4 text-left text-slate-950 shadow-lg shadow-orange-500/10 transition hover:-translate-y-0.5 hover:shadow-orange-500/20"
             >
               <span className="flex items-center gap-3">
                 <span className="rounded-xl bg-black/10 p-2.5">
@@ -327,11 +342,11 @@ export default function EADashboard() {
       ) : (
         <motion.section
           variants={itemVariants}
-          className="rounded-lg border border-slate-800 bg-slate-900/80 p-5 sm:p-6"
+          className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 sm:p-6"
         >
           <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
             <div className="flex items-start gap-4">
-              <div className={`rounded-lg p-3 ${
+              <div className={`rounded-2xl p-3 ${
                 brokerAcc ? 'bg-emerald-400/10 text-emerald-300' : 'bg-orange-400/10 text-orange-300'
               }`}>
                 <Cpu size={22} />
@@ -370,7 +385,7 @@ export default function EADashboard() {
       <BrokerConnectionModal
         isOpen={showBrokerModal}
         onClose={() => setShowBrokerModal(false)}
-        onSuccess={fetchStats}
+        onSuccess={() => fetchStats(false)}
         user={user}
       />
 
