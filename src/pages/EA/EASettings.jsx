@@ -5,7 +5,7 @@ import {
   fetchEADashboardStatsApi,
   redeemEALicenseApi,
 } from '../../services/api';
-import BrokerConnectionModal from './BrokerConnectionModal';
+import BrokerConnectionModal from '../../components/common/BrokerConnectionModal';
 import {
   Activity,
   ArrowUpRight,
@@ -170,10 +170,6 @@ export default function EADashboard() {
 
         <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
           <div className="max-w-2xl">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-400/20 bg-orange-400/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-orange-300">
-              <span className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_10px_rgba(251,146,60,0.8)]" />
-              Hoba Labs · Automated trading
-            </div>
             <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
               EA Control Centre
             </h1>
