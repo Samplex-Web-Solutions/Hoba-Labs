@@ -1,152 +1,148 @@
-import React, { useState, useEffect } from 'react';
-import { searchBrokerServersApi } from '../services/api';
-import { Search, Server, Check } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Server, X, LockKeyhole, RefreshCw } from 'lucide-react';
+import { connectBrokerApi } from '../../services/api';
+import BrokerServerCombobox from './BrokerServerCombobox';
+import { toast } from 'react-toastify';
 
-export default function BrokerServerCombobox({ value, onChange, theme = 'dark' }) {
-  const [isManual, setIsManual] = useState(false);
-  const [searchTerm, setSearchTerm] = useState(value || '');
-  const [suggestions, setSuggestions] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+function Field({ label, ...props }) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-xs font-medium text-slate-300">{label}</span>
+      <input
+        {...props}
+        className="w-full rounded-xl border border-slate-700/80 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 hover:border-slate-600 focus:border-orange-400 focus:ring-4 focus:ring-orange-400/10"
+      />
+    </label>
+  );
+}
 
-  useEffect(() => {
-    if (isManual || searchTerm.trim().length < 2) {
-      setSuggestions([]);
-      setIsOpen(false);
+export default function BrokerConnectionModal({ isOpen, onClose, onSuccess, user }) {
+  const [brokerData, setBrokerData] = useState({ login: '', password: '', server: '', broker: 'mt5' });
+  const [connectingBroker, setConnectingBroker] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleConnectBroker = async (e) => {
+    e.preventDefault();
+    if (!brokerData.login || !brokerData.password || !brokerData.server) {
+      toast.error('Please fill in all required broker credentials.');
       return;
     }
 
-    const timer = setTimeout(async () => {
-      setLoading(true);
-      try {
-        const data = await searchBrokerServersApi(searchTerm.trim(), 'mt5');
-        if (data.success) {
-          setSuggestions(data.servers || []);
-          setIsOpen(true);
-        }
-      } catch (err) {
-        console.error('[SERVER_SEARCH_ERROR]:', err);
-      } finally {
-        setLoading(false);
+    setConnectingBroker(true);
+
+    try {
+      const response = await connectBrokerApi({
+        userId: user?.id,
+        email: user?.email,
+        login: brokerData.login,
+        password: brokerData.password,
+        server: brokerData.server,
+        broker: brokerData.broker,
+        magic: 897691,
+      });
+
+      if (response.success) {
+        toast.success('Broker account connected successfully via TickerAll!');
+        setBrokerData({ login: '', password: '', server: '', broker: 'mt5' });
+        if (onSuccess) onSuccess();
+        onClose();
       }
-    }, 250);
-
-    return () => clearTimeout(timer);
-  }, [searchTerm, isManual]);
-
-  const handleSelect = (serverName) => {
-    setSearchTerm(serverName);
-    onChange(serverName);
-    setIsOpen(false);
+    } catch (err) {
+      toast.error(err.message || 'Failed to connect broker account. Check credentials.');
+    } finally {
+      setConnectingBroker(false);
+    }
   };
 
-  const isDark = theme === 'dark';
-
   return (
-    <div className="space-y-1.5 w-full">
-      <div className="flex justify-between items-center text-xs">
-        <span className={`font-medium ${isDark ? 'text-slate-300' : 'text-gray-600 uppercase tracking-wider font-semibold'}`}>
-          Broker / Prop Firm Server
-        </span>
-        <button
-          type="button"
-          onClick={() => {
-            setIsManual(!isManual);
-            setIsOpen(false);
-          }}
-          className="text-orange-400 hover:text-orange-300 text-[11px] font-medium underline"
+    <AnimatePresence>
+      <motion.div
+        className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/80 p-4 backdrop-blur-md"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onMouseDown={(e) => {
+          if (e.target === e.currentTarget && !connectingBroker) onClose();
+        }}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 12, scale: 0.98 }}
+          transition={{ duration: 0.22 }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="broker-modal-title"
+          className="relative my-8 w-full max-w-lg rounded-3xl border border-slate-700/80 bg-slate-900 p-6 shadow-2xl shadow-black/40 sm:p-8"
         >
-          {isManual ? '← Search server list' : 'Enter server manually'}
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={connectingBroker}
+            aria-label="Close dialog"
+            className="absolute right-5 top-5 rounded-lg p-2 text-slate-500 transition hover:bg-slate-800 hover:text-white disabled:opacity-50"
+          >
+            <X size={18} />
+          </button>
 
-      {isManual ? (
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            onChange(e.target.value);
-          }}
-          placeholder="e.g. Exness-MT5Trial11 or FundedNext-Server 2"
-          required
-          className={
-            isDark
-              ? 'w-full rounded-xl border border-slate-700/80 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-orange-400 focus:ring-4 focus:ring-orange-400/10'
-              : 'w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm text-gray-800 transition-all'
-          }
-        />
-      ) : (
-        <div className="relative w-full">
-          <div className="relative">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                onChange(e.target.value);
-              }}
-              onFocus={() => suggestions.length > 0 && setIsOpen(true)}
-              placeholder="Search server (e.g. FTMO, Exness, FundedNext)"
-              required
-              className={
-                isDark
-                  ? 'w-full rounded-xl border border-slate-700/80 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-orange-400 focus:ring-4 focus:ring-orange-400/10'
-                  : 'w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm text-gray-800 transition-all'
-              }
-            />
+          <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl border border-orange-400/20 bg-orange-400/10 text-orange-300">
+            <Server size={22} />
           </div>
+          <h2 id="broker-modal-title" className="text-xl font-semibold text-white">
+            Connect MetaTrader Account
+          </h2>
+          <p className="mt-2 max-w-sm text-sm leading-6 text-slate-400">
+            Link your MT5 demo or live broker account to enable automated signal execution.
+          </p>
 
-          {isOpen && (
-            <div
-              className={`absolute z-30 w-full mt-1.5 rounded-xl border shadow-xl max-h-56 overflow-y-auto ${
-                isDark ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-gray-200 text-gray-800'
-              }`}
-            >
-              {loading ? (
-                <div className="p-3 text-xs text-slate-400">Searching servers...</div>
-              ) : suggestions.length === 0 ? (
-                <div
-                  onClick={() => setIsManual(true)}
-                  className="p-3 text-xs text-slate-400 hover:bg-slate-800/50 cursor-pointer"
-                >
-                  No match found. Click here to enter server string manually.
-                </div>
-              ) : (
-                suggestions.map((item) => (
-                  <div
-                    key={item.server_name}
-                    onClick={() => handleSelect(item.server_name)}
-                    className={`p-3 border-b flex items-center justify-between cursor-pointer transition ${
-                      isDark
-                        ? 'border-slate-800 hover:bg-slate-800/70'
-                        : 'border-gray-100 hover:bg-gray-50'
-                    }`}
-                  >
-                    <div>
-                      <div className="text-sm font-semibold">{item.server_name}</div>
-                      <div className={`text-xs ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-                        {item.company_name}
-                      </div>
-                    </div>
-                    <span
-                      className={`text-[10px] px-2 py-0.5 rounded font-mono uppercase ${
-                        item.type === 'prop_firm'
-                          ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                          : item.type === 'evaluation'
-                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                          : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
-                      }`}
-                    >
-                      {item.type.replace('_', ' ')}
-                    </span>
-                  </div>
-                ))
-              )}
+          <form onSubmit={handleConnectBroker} className="mt-7 space-y-5">
+            <Field
+              label="MT5 Account Login"
+              type="text"
+              inputMode="numeric"
+              value={brokerData.login}
+              onChange={(e) => setBrokerData({ ...brokerData, login: e.target.value })}
+              required
+              placeholder="e.g. 84930211"
+              autoComplete="off"
+            />
+            <Field
+              label="Trading Password"
+              type="password"
+              value={brokerData.password}
+              onChange={(e) => setBrokerData({ ...brokerData, password: e.target.value })}
+              required
+              placeholder="Enter your MT5 trading password"
+              autoComplete="new-password"
+            />
+
+            {/* Searchable Server Combobox with Manual Fallback */}
+            <BrokerServerCombobox
+              value={brokerData.server}
+              onChange={(serverName) => setBrokerData({ ...brokerData, server: serverName })}
+              theme="dark"
+            />
+
+            <div className="flex items-start gap-2 rounded-xl border border-slate-800 bg-slate-950/60 p-3">
+              <LockKeyhole size={15} className="mt-0.5 shrink-0 text-emerald-400" />
+              <p className="text-[11px] leading-5 text-slate-500">
+                Your credentials establish a secure bridge via TickerAll. Only submit details for the account you want to link.
+              </p>
             </div>
-          )}
-        </div>
-      )}
-    </div>
+
+            <button
+              type="submit"
+              disabled={connectingBroker}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-3.5 text-sm font-bold text-slate-950 transition hover:bg-orange-400 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {connectingBroker && <RefreshCw size={16} className="animate-spin" />}
+              {connectingBroker ? 'Establishing TickerAll Session...' : 'Save and Connect Account'}
+            </button>
+          </form>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 }
