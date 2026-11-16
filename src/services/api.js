@@ -106,9 +106,6 @@ export async function initializeCryptoPaymentApi(planKey) {
   return data;
 }
 
-/**
- * Fetches the user's subscription payment history ledger
- */
 export async function fetchSubscriptionHistoryApi() {
   const response = await fetch(`${API_BASE_URL}/subscription/history`, {
     method: 'GET',
@@ -120,6 +117,46 @@ export async function fetchSubscriptionHistoryApi() {
   return data;
 }
 
+
+export async function fetchEADashboardStatsApi() {
+  const response = await fetch(`${API_BASE_URL}/broker/ea-stats`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json', ...authHeader() },
+  });
+
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'Failed to fetch EA stats');
+  return data;
+}
+
+export async function redeemEALicenseApi(keyCode) {
+  const response = await fetch(`${API_BASE_URL}/license/redeem`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeader() },
+    body: JSON.stringify({ key_code: keyCode }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'Failed to redeem license key');
+  return data;
+}
+
+export async function connectBrokerApi(brokerData) {
+  const response = await fetch(`${API_BASE_URL}/broker/connect`, {
+    method: 'POST',
+    headers: { 
+      'Content-Type': 'application/json', 
+      ...authHeader() 
+    },
+    body: JSON.stringify(brokerData),
+  });
+
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Failed to connect broker account');
+  return data;
+}
+
+
 export const fetchTodayCalendar = async () => {
   try {
     const response = await fetch(`${API_BASE_URL}/calendar/today`);
@@ -129,7 +166,7 @@ export const fetchTodayCalendar = async () => {
     console.error('[API_ERROR] Failed to fetch today\'s calendar:', err.message);
     return { success: false, data: [] };
   }
-}
+};
 
 export const fetchSignalsApi = async (token) => {
   const response = await fetch(`${API_BASE_URL}/signals`, {

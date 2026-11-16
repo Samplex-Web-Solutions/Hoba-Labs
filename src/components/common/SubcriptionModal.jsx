@@ -1,3 +1,4 @@
+// src/components/modals/SubscriptionModal.jsx
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
@@ -10,11 +11,11 @@ import {
   ArrowLeft,
   ArrowRight,
   ShieldCheck,
-  Sparkles,
-  Zap,
   Clock3,
   BadgeCheck,
   LockKeyhole,
+  Cpu,
+  Radio,
 } from 'lucide-react';
 import {
   getSubscriptionPlansApi,
@@ -43,7 +44,13 @@ const contentVariants = {
   exit: { opacity: 0, y: -8, transition: { duration: 0.16 } },
 };
 
-const SubscriptionModal = ({ isOpen, onClose }) => {
+/**
+ * @param {Object} props
+ * @param {boolean} props.isOpen
+ * @param {Function} props.onClose
+ * @param {'all' | 'ea' | 'signals'} [props.mode='all'] - Filter plans by type
+ */
+const SubscriptionModal = ({ isOpen, onClose, mode = 'all' }) => {
   const [plans, setPlans] = useState([]);
   const [selectedMethod, setSelectedMethod] = useState(null);
   const [selectedPlanKey, setSelectedPlanKey] = useState('');
@@ -61,13 +68,26 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
       try {
         const data = await getSubscriptionPlansApi();
         if (!cancelled && data.success && data.plans?.length > 0) {
-          setPlans(data.plans);
-          setSelectedPlanKey((current) =>
-            data.plans.some((plan) => plan.plan_key === current)
-              ? current
-              : data.plans[0].plan_key
-          );
-        } else if (!cancelled && (!data.plans || data.plans.length === 0)) {
+          // Explicitly filter plans based on mode prop
+          let filteredPlans = data.plans;
+          const targetMode = (mode || 'all').toLowerCase();
+
+          if (targetMode === 'ea') {
+            filteredPlans = data.plans.filter((p) => p.plan_key.toLowerCase().includes('ea'));
+          } else if (targetMode === 'signals') {
+            filteredPlans = data.plans.filter((p) => !p.plan_key.toLowerCase().includes('ea'));
+          }
+
+          setPlans(filteredPlans);
+
+          if (filteredPlans.length > 0) {
+            setSelectedPlanKey((current) =>
+              filteredPlans.some((plan) => plan.plan_key === current)
+                ? current
+                : filteredPlans[0].plan_key
+            );
+          }
+        } else if (!cancelled) {
           setPlans([]);
         }
       } catch (err) {
@@ -84,7 +104,7 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
     return () => {
       cancelled = true;
     };
-  }, [isOpen]);
+  }, [isOpen, mode]); // <-- Added 'mode' here so it re-filters correctly when changed
 
   useEffect(() => {
     if (!isOpen) {
@@ -138,11 +158,7 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   const activePlan = plans.find((plan) => plan.plan_key === selectedPlanKey);
-  const isEaPlan =
-    selectedPlanKey.toLowerCase().includes('ea') ||
-    selectedPlanKey.toLowerCase().includes('bundle');
-
-  const Motion = reduceMotion ? motion.div : motion.div;
+  const isEaMode = mode === 'ea' || (activePlan && activePlan.plan_key.toLowerCase().includes('ea'));
 
   return (
     <AnimatePresence>
@@ -169,18 +185,27 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
           >
             {/* Ambient highlights */}
             <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-              <div className="absolute -right-20 -top-24 h-64 w-64 rounded-full bg-orange-500/10 blur-[90px]" />
+              <div className={`absolute -right-20 -top-24 h-64 w-64 rounded-full blur-[90px] ${isEaMode ? 'bg-orange-500/15' : 'bg-blue-500/15'}`} />
               <div className="absolute -bottom-28 -left-20 h-64 w-64 rounded-full bg-amber-500/[0.06] blur-[90px]" />
             </div>
 
+            {/* Modal Header */}
             <div className="relative flex items-center justify-between border-b border-white/[0.07] px-5 py-4 sm:px-7">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-orange-400/20 bg-orange-400/10 text-orange-300">
-                  <LayersPlus size={19} />
+                <div className={`flex h-10 w-10 items-center justify-center rounded-xl border ${
+                  isEaMode 
+                    ? 'border-orange-400/20 bg-orange-400/10 text-orange-300' 
+                    : 'border-blue-400/20 bg-blue-400/10 text-blue-300'
+                }`}>
+                  {isEaMode ? <Cpu size={19} /> : <Radio size={19} />}
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-300">Hoba Labs</p>
-                  <p className="mt-0.5 text-sm font-semibold text-white">Subscription checkout</p>
+                  <p className={`text-[10px] font-bold uppercase tracking-[0.2em] ${isEaMode ? 'text-orange-300' : 'text-blue-300'}`}>
+                    {isEaMode ? 'EA Auto-Execution' : 'Signal Subscriptions'}
+                  </p>
+                  <p className="mt-0.5 text-sm font-semibold text-white">
+                    {isEaMode ? 'Automated Trading Checkout' : 'Signal Broadcast Access'}
+                  </p>
                 </div>
               </div>
               <button
@@ -197,12 +222,14 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
             <div className="relative overflow-y-auto px-5 py-6 sm:px-7 sm:py-7">
               <div className="mb-6">
                 <div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
-                  <span className={`h-1.5 w-1.5 rounded-full ${selectedMethod ? 'bg-emerald-400' : 'bg-orange-400'}`} />
+                  <span className={`h-1.5 w-1.5 rounded-full ${selectedMethod ? 'bg-emerald-400' : isEaMode ? 'bg-orange-400' : 'bg-blue-400'}`} />
                   Step {selectedMethod ? '2' : '1'} of 2
                 </div>
                 <div className="mb-4 h-1 overflow-hidden rounded-full bg-white/[0.07]">
                   <motion.div
-                    className="h-full rounded-full bg-gradient-to-r from-orange-400 to-amber-300"
+                    className={`h-full rounded-full bg-gradient-to-r ${
+                      isEaMode ? 'from-orange-400 to-amber-300' : 'from-blue-400 to-cyan-300'
+                    }`}
                     initial={false}
                     animate={{ width: selectedMethod ? '100%' : '50%' }}
                     transition={{ duration: reduceMotion ? 0 : 0.35, ease }}
@@ -220,11 +247,13 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
                     exit="exit"
                     className="flex min-h-[280px] flex-col items-center justify-center text-center"
                   >
-                    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-orange-400/20 bg-orange-400/10 text-orange-300">
+                    <div className={`mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border ${
+                      isEaMode ? 'border-orange-400/20 bg-orange-400/10 text-orange-300' : 'border-blue-400/20 bg-blue-400/10 text-blue-300'
+                    }`}>
                       <Loader2 className="animate-spin" size={24} />
                     </div>
-                    <h2 className="text-base font-semibold text-white">Preparing your packages</h2>
-                    <p className="mt-1 text-xs text-slate-500">Loading available subscription plans securely...</p>
+                    <h2 className="text-base font-semibold text-white">Preparing packages</h2>
+                    <p className="mt-1 text-xs text-slate-500">Loading {isEaMode ? 'EA auto-execution' : 'signal'} plans...</p>
                   </motion.div>
                 ) : plans.length === 0 ? (
                   <motion.div
@@ -238,32 +267,13 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
                     <div className="mb-4 rounded-2xl border border-amber-400/20 bg-amber-400/10 p-4 text-amber-300">
                       <LayersPlus size={24} />
                     </div>
-                    <h2 className="text-base font-semibold text-white">Plans unavailable</h2>
+                    <h2 className="text-base font-semibold text-white">No plans found</h2>
                     <p className="mt-1 max-w-xs text-sm leading-6 text-slate-400">
-                      We couldn&apos;t find any subscription packages right now. Please try again shortly.
+                      No {isEaMode ? 'EA execution' : 'signal'} plans are available at the moment.
                     </p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setLoading(true);
-                        getSubscriptionPlansApi()
-                          .then((data) => {
-                            if (data.success && data.plans?.length) {
-                              setPlans(data.plans);
-                              setSelectedPlanKey(data.plans[0].plan_key);
-                            } else {
-                              toast.error('No subscription packages are available yet.');
-                            }
-                          })
-                          .catch((err) => toast.error(err.message || 'Could not load subscription packages.'))
-                          .finally(() => setLoading(false));
-                      }}
-                      className="mt-5 rounded-xl bg-orange-400 px-5 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-orange-300"
-                    >
-                      Try again
-                    </button>
                   </motion.div>
                 ) : !selectedMethod ? (
+                  /* Step 1: Select Payment Method */
                   <motion.div
                     key="method"
                     variants={contentVariants}
@@ -273,10 +283,10 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
                   >
                     <div className="mb-6 text-center">
                       <h2 id="subscription-modal-title" className="text-2xl font-bold tracking-tight text-white">
-                        Choose how to pay
+                        Choose payment method
                       </h2>
                       <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-400">
-                        Select your preferred payment method to continue to your Hoba Labs subscription.
+                        Select how you would like to complete your {isEaMode ? 'EA subscription' : 'signal subscription'}.
                       </p>
                     </div>
 
@@ -286,18 +296,24 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
                         whileHover={reduceMotion ? undefined : { y: -3 }}
                         whileTap={reduceMotion ? undefined : { scale: 0.99 }}
                         onClick={() => setSelectedMethod('paystack')}
-                        className="group rounded-2xl border border-white/[0.09] bg-white/[0.025] p-5 text-left transition-colors hover:border-orange-400/40 hover:bg-orange-400/[0.05] focus:outline-none focus:ring-2 focus:ring-orange-300/50"
+                        className={`group rounded-2xl border border-white/[0.09] bg-white/[0.025] p-5 text-left transition-colors focus:outline-none focus:ring-2 ${
+                          isEaMode 
+                            ? 'hover:border-orange-400/40 hover:bg-orange-400/[0.05] focus:ring-orange-300/50' 
+                            : 'hover:border-blue-400/40 hover:bg-blue-400/[0.05] focus:ring-blue-300/50'
+                        }`}
                       >
                         <div className="mb-5 flex items-center justify-between">
-                          <div className="rounded-xl border border-orange-400/20 bg-orange-400/10 p-3 text-orange-300">
+                          <div className={`rounded-xl border p-3 ${
+                            isEaMode ? 'border-orange-400/20 bg-orange-400/10 text-orange-300' : 'border-blue-400/20 bg-blue-400/10 text-blue-300'
+                          }`}>
                             <CreditCard size={23} />
                           </div>
-                          <ArrowRight size={18} className="text-slate-600 transition group-hover:translate-x-1 group-hover:text-orange-300" />
+                          <ArrowRight size={18} className="text-slate-600 transition group-hover:translate-x-1 group-hover:text-white" />
                         </div>
                         <h3 className="text-sm font-bold text-white">Bank transfer / Card</h3>
-                        <p className="mt-1 text-xs font-medium text-orange-200">Paystack · Nigerian Naira</p>
+                        <p className={`mt-1 text-xs font-medium ${isEaMode ? 'text-orange-200' : 'text-blue-200'}`}>Paystack · Nigerian Naira</p>
                         <p className="mt-3 text-xs leading-5 text-slate-500">
-                          Pay in naira using the available Paystack payment options.
+                          Instant activation via card or direct bank transfer.
                         </p>
                       </motion.button>
 
@@ -317,12 +333,13 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
                         <h3 className="text-sm font-bold text-white">Cryptocurrency</h3>
                         <p className="mt-1 text-xs font-medium text-amber-200">NOWPayments · USD</p>
                         <p className="mt-3 text-xs leading-5 text-slate-500">
-                          Pay using supported digital currencies such as USDT, BTC or ETH.
+                          Pay using USDT, BTC, ETH, or supported crypto.
                         </p>
                       </motion.button>
                     </div>
                   </motion.div>
                 ) : (
+                  /* Step 2: Select Specific Plan */
                   <motion.div
                     key="plans"
                     variants={contentVariants}
@@ -339,21 +356,23 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
                         <ArrowLeft size={15} /> Change payment method
                       </button>
                       <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-300">
-                        {selectedMethod === 'paystack' ? <CreditCard size={13} className="text-orange-300" /> : <Coins size={13} className="text-amber-200" />}
+                        {selectedMethod === 'paystack' ? <CreditCard size={13} className={isEaMode ? 'text-orange-300' : 'text-blue-300'} /> : <Coins size={13} className="text-amber-200" />}
                         {selectedMethod === 'paystack' ? 'Paystack · NGN' : 'Crypto · USD'}
                       </span>
                     </div>
 
                     <div className="mb-5">
                       <h2 id="subscription-modal-title" className="text-2xl font-bold tracking-tight text-white">
-                        Select your plan
+                        Select your {isEaMode ? 'EA' : 'signal'} plan
                       </h2>
                       <p className="mt-1.5 text-sm text-slate-400">
-                        Choose the subscription duration that works for you.
+                        {isEaMode 
+                          ? 'Includes dedicated MetaApi cloud container execution & 1-to-1 license key.' 
+                          : 'Includes 24/7 web dashboard signal access & Telegram alerts.'}
                       </p>
                     </div>
 
-                    <div className="grid gap-3 sm:grid-cols-3">
+                    <div className={`grid gap-3 ${plans.length > 2 ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
                       {plans.map((plan, index) => {
                         const isSelected = selectedPlanKey === plan.plan_key;
                         const price = selectedMethod === 'paystack'
@@ -371,21 +390,25 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.25, delay: index * 0.06, ease }}
                             aria-pressed={isSelected}
-                            className={`relative flex min-h-[150px] flex-col rounded-2xl border p-4 text-left transition-all focus:outline-none focus:ring-2 focus:ring-orange-300/50 ${
+                            className={`relative flex min-h-[150px] flex-col rounded-2xl border p-4 text-left transition-all focus:outline-none focus:ring-2 ${
                               isSelected
-                                ? 'border-orange-400/70 bg-orange-400/[0.09] shadow-lg shadow-orange-500/[0.08]'
+                                ? isEaMode 
+                                  ? 'border-orange-400/70 bg-orange-400/[0.09] shadow-lg shadow-orange-500/[0.08] focus:ring-orange-300/50' 
+                                  : 'border-blue-400/70 bg-blue-400/[0.09] shadow-lg shadow-blue-500/[0.08] focus:ring-blue-300/50'
                                 : 'border-white/[0.08] bg-white/[0.025] hover:border-white/20 hover:bg-white/[0.045]'
                             }`}
                           >
                             {isSelected && (
                               <motion.span
                                 layoutId="selected-plan-indicator"
-                                className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-orange-400 text-slate-950"
+                                className={`absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full text-slate-950 ${
+                                  isEaMode ? 'bg-orange-400' : 'bg-blue-400'
+                                }`}
                               >
                                 <CheckCircle2 size={13} />
                               </motion.span>
                             )}
-                            <span className={`pr-6 text-xs font-semibold ${isSelected ? 'text-orange-200' : 'text-slate-300'}`}>
+                            <span className={`pr-6 text-xs font-semibold ${isSelected ? (isEaMode ? 'text-orange-200' : 'text-blue-200') : 'text-slate-300'}`}>
                               {plan.name}
                             </span>
                             <span className="mt-5 text-2xl font-bold tracking-tight text-white">{price}</span>
@@ -397,30 +420,58 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
                       })}
                     </div>
 
+                    {/* Features checklist based on mode */}
                     <div className="mt-5 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4">
                       <div className="mb-3 flex items-center gap-2 text-xs font-semibold text-white">
                         <BadgeCheck size={16} className="text-emerald-300" />
-                        Included with your subscription
+                        Included features
                       </div>
                       <div className="space-y-2.5 text-xs leading-5 text-slate-400">
-                        <div className="flex items-start gap-2.5">
-                          <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-400" />
-                          <span>{isEaPlan ? 'Automated MT5 Client Bridge & API Token Access' : '24/7 access to Telegram Signal Broadcast Channel'}</span>
-                        </div>
-                        <div className="flex items-start gap-2.5">
-                          <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-400" />
-                          <span>Elite v4.15 Structural Engine</span>
-                        </div>
+                        {isEaMode ? (
+                          <>
+                            <div className="flex items-start gap-2.5">
+                              <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-400" />
+                              <span>Dedicated MetaApi Cloud Container & Auto Execution</span>
+                            </div>
+                            <div className="flex items-start gap-2.5">
+                              <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-400" />
+                              <span>Single-Use EA License Key (Emailed automatically)</span>
+                            </div>
+                            <div className="flex items-start gap-2.5">
+                              <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-400" />
+                              <span>Live MT5 Balance, Equity & PnL Performance Dashboard</span>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="flex items-start gap-2.5">
+                              <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-400" />
+                              <span>Full Access to Live & Historical XAU/USD Signals</span>
+                            </div>
+                            <div className="flex items-start gap-2.5">
+                              <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-400" />
+                              <span>24/7 Telegram Broadcast Channel & Web App Alerts</span>
+                            </div>
+                            <div className="flex items-start gap-2.5">
+                              <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-400" />
+                              <span>Structural Market Engine Analysis & Economic Calendar</span>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
 
-                    <div className="mt-5 rounded-2xl border border-orange-400/15 bg-gradient-to-r from-orange-400/[0.08] to-transparent p-4">
+                    <div className={`mt-5 rounded-2xl border p-4 ${
+                      isEaMode 
+                        ? 'border-orange-400/15 bg-gradient-to-r from-orange-400/[0.08] to-transparent' 
+                        : 'border-blue-400/15 bg-gradient-to-r from-blue-400/[0.08] to-transparent'
+                    }`}>
                       <div className="flex items-center justify-between gap-3">
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">Your selection</p>
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">Selected plan</p>
                           <p className="mt-1 text-sm font-semibold text-white">{activePlan?.name || 'Select a plan'}</p>
                         </div>
-                        <p className="text-xl font-bold text-orange-200">
+                        <p className={`text-xl font-bold ${isEaMode ? 'text-orange-200' : 'text-blue-200'}`}>
                           {activePlan
                             ? selectedMethod === 'paystack'
                               ? `₦${Number(activePlan.naira_price || 0).toLocaleString()}`
@@ -437,9 +488,9 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
                       whileHover={reduceMotion || processing ? undefined : { y: -2 }}
                       whileTap={reduceMotion || processing ? undefined : { scale: 0.99 }}
                       className={`mt-4 flex w-full items-center justify-center gap-2 rounded-xl px-5 py-4 text-sm font-bold text-slate-950 shadow-lg transition disabled:cursor-not-allowed disabled:opacity-60 ${
-                        selectedMethod === 'paystack'
-                          ? 'bg-gradient-to-r from-orange-400 to-amber-400 shadow-orange-500/15 hover:from-orange-300 hover:to-amber-300'
-                          : 'bg-gradient-to-r from-amber-300 to-yellow-400 shadow-amber-500/15 hover:from-amber-200 hover:to-yellow-300'
+                        isEaMode 
+                          ? 'bg-gradient-to-r from-orange-400 to-amber-400 shadow-orange-500/15 hover:from-orange-300 hover:to-amber-300' 
+                          : 'bg-gradient-to-r from-blue-400 to-cyan-400 shadow-blue-500/15 hover:from-blue-300 hover:to-cyan-300'
                       }`}
                     >
                       {processing ? (

@@ -1,103 +1,518 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../../store/authStore';
-import { Copy, Check, Download, Terminal, ShieldAlert } from 'lucide-react';
+import {
+  connectBrokerApi,
+  fetchEADashboardStatsApi,
+  redeemEALicenseApi,
+} from '../../services/api';
+import {
+  Activity,
+  ArrowUpRight,
+  CheckCircle2,
+  ChevronRight,
+  CircleDollarSign,
+  Cpu,
+  KeyRound,
+  LockKeyhole,
+  RefreshCw,
+  Server,
+  ShieldCheck,
+  ShoppingBag,
+  Wallet,
+  X,
+  Zap,
+} from 'lucide-react';
 import { toast } from 'react-toastify';
+import SubscriptionModal from '../../components/common/SubcriptionModal';
 
-export default function EABridgeSettings() {
-  const { user } = useAuthStore();
-  const [copied, setCopied] = useState(false);
+const pageVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08, delayChildren: 0.04 },
+  },
+};
 
-  // user.client_id serves as their unique EA API Token
-  const apiToken = user?.client_id || 'Generating token...';
+const itemVariants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+  },
+};
 
-  const handleCopyToken = () => {
-    navigator.clipboard.writeText(apiToken);
-    setCopied(true);
-    toast.success('API Token copied to clipboard!');
-    setTimeout(() => setCopied(false), 2000);
-  };
+const formatMoney = (value) =>
+  `$${Number(value || 0).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 
-  const handleDownloadEA = () => {
-    // Generates and triggers download of the compiled/source file client bridge script
-    const eaCode = `//+------------------------------------------------------------------+\n` +
-                   `//|                               HobaLabs_Client_Bridge.mq5 |\n` +
-                   `//|               API Token: ${apiToken}                    |\n` +
-                   `//+------------------------------------------------------------------+\n` +
-                   `#property strict\ninput string InpApiToken = "${apiToken}";\n` +
-                   `input string InpServerURL = "https://hobalabs-api.absg-ohos.cloud/api/execution/gold-signals";\n` +
-                   `// ... rest of execution bridge code ...`;
-                   
-    const blob = new Blob([eaCode], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'HobaLabs_Client_Bridge.mq5';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success('Client EA file downloaded successfully!');
+function StatCard({ title, value, caption, icon: Icon, accent = 'orange', valueClass = '' }) {
+  const accents = {
+    orange: 'bg-orange-500/10 text-orange-400 ring-orange-500/15',
+    blue: 'bg-sky-500/10 text-sky-400 ring-sky-500/15',
+    green: 'bg-emerald-500/10 text-emerald-400 ring-emerald-500/15',
+    violet: 'bg-violet-500/10 text-violet-400 ring-violet-500/15',
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-md p-6 space-y-6 text-slate-100">
-      <div className="flex items-center space-x-3">
-        <div className="p-3 bg-orange-500/10 border border-orange-500/20 text-orange-400 rounded-md">
-          <Terminal className="w-6 h-6" />
-        </div>
+    <motion.div
+      variants={itemVariants}
+      whileHover={{ y: -3 }}
+      className="group rounded-2xl border p-5 border-slate-800/90 bg-slate-900/80 shadow-[0_12px_35px_-24px_rgba(0,0,0,0.8)] transition-colors hover:border-slate-700"
+    >
+      <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold">MetaTrader 5 Auto-Execution Bridge</h2>
-          <p className="text-xs text-slate-400">Configure your personal EA bridge to receive automated v4.15 Gold signals.</p>
+          <p className="text-xs font-medium tracking-wide text-slate-400">{title}</p>
+          <p className={`mt-3 text-2xl font-semibold tracking-tight text-white sm:text-[1.7rem] ${valueClass}`}>
+            {value}
+          </p>
+          <p className="mt-1.5 text-[11px] text-slate-500">{caption}</p>
+        </div>
+        <div className={`rounded-xl p-3 ring-1 ${accents[accent]}`}>
+          <Icon size={19} strokeWidth={1.8} />
         </div>
       </div>
+    </motion.div>
+  );
+}
 
-      {/* API Token Box */}
-      <div className="space-y-2">
-        <label className="text-xs font-medium text-slate-300">Your Unique API Token (Secret)</label>
-        <div className="flex items-center space-x-2">
-          <input 
-            type="text" 
-            readOnly 
-            value={apiToken} 
-            className="w-full bg-slate-950 border border-slate-800 rounded-md px-4 py-2.5 text-sm font-mono text-orange-400 select-all"
-          />
-          <button 
-            onClick={handleCopyToken}
-            className="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2.5 rounded-md text-sm font-medium transition-colors flex items-center space-x-1.5 shrink-0"
+function Field({ label, ...props }) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-xs font-medium text-slate-300">{label}</span>
+      <input
+        {...props}
+        className="w-full rounded-xl border border-slate-700/80 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 hover:border-slate-600 focus:border-orange-400 focus:ring-4 focus:ring-orange-400/10"
+      />
+    </label>
+  );
+}
+
+export default function EADashboard() {
+  const { user, updateUser } = useAuthStore();
+
+  const [loading, setLoading] = useState(true);
+  const [hasAccess, setHasAccess] = useState(user?.ea_access || false);
+  const [stats, setStats] = useState({
+    balance: 0,
+    equity: 0,
+    floating_pnl: 0,
+    connection_status: 'DISCONNECTED',
+  });
+  const [brokerAcc, setBrokerAcc] = useState(null);
+
+  const [licenseKeyInput, setLicenseKeyInput] = useState('');
+  const [redeemingKey, setRedeemingKey] = useState(false);
+
+  const [showBrokerModal, setShowBrokerModal] = useState(false);
+  const [brokerData, setBrokerData] = useState({ login: '', password: '', server: '' });
+  const [connectingBroker, setConnectingBroker] = useState(false);
+  const [isSubModalOpen, setIsSubModalOpen] = useState(false);
+
+  const fetchStats = async () => {
+    try {
+      const data = await fetchEADashboardStatsApi();
+      if (data.success) {
+        setHasAccess(data.hasEaAccess);
+        setStats(data.stats || {
+          balance: 0,
+          equity: 0,
+          floating_pnl: 0,
+          connection_status: 'DISCONNECTED',
+        });
+        setBrokerAcc(data.account || null);
+      }
+    } catch (err) {
+      console.error('Failed to fetch EA stats:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const handleRedeemKey = async (e) => {
+    e.preventDefault();
+    if (!licenseKeyInput.trim()) return;
+
+    setRedeemingKey(true);
+    try {
+      const res = await redeemEALicenseApi(licenseKeyInput.trim());
+      if (res.success) {
+        toast.success(res.message);
+        setHasAccess(true);
+        if (updateUser) updateUser({ ...user, ea_access: true });
+        setLicenseKeyInput('');
+        setShowBrokerModal(true);
+      }
+    } catch (err) {
+      toast.error(err.message || 'Invalid or already redeemed license key.');
+    } finally {
+      setRedeemingKey(false);
+    }
+  };
+
+  const handleConnectBroker = async (e) => {
+    e.preventDefault();
+    setConnectingBroker(true);
+
+    try {
+      const response = await connectBrokerApi({
+        userId: user?.id,
+        email: user?.email,
+        login: brokerData.login,
+        password: brokerData.password,
+        server: brokerData.server,
+      });
+
+      if (response.success) {
+        toast.success('Broker account connected successfully!');
+        setShowBrokerModal(false);
+        setBrokerData({ login: '', password: '', server: '' });
+        fetchStats();
+      }
+    } catch (err) {
+      toast.error(err.message || 'Failed to connect broker account.');
+    } finally {
+      setConnectingBroker(false);
+    }
+  };
+
+  const isConnected = stats.connection_status === 'CONNECTED';
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[55vh] flex-col items-center justify-center gap-3 text-slate-400">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
+          <RefreshCw className="h-6 w-6 animate-spin text-orange-400" />
+        </div>
+        <p className="text-sm">Preparing your trading dashboard...</p>
+      </div>
+    );
+  }
+
+  return (
+    <motion.div
+      variants={pageVariants}
+      initial="hidden"
+      animate="visible"
+      className="mx-auto w-full max-w-6xl space-y-6 pb-12"
+    >
+      {/* Page heading */}
+      <motion.section
+        variants={itemVariants}
+        className="relative isolate overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900 to-[#21170f] p-6 sm:p-8"
+      >
+        <div className="pointer-events-none absolute -right-16 -top-24 -z-10 h-72 w-72 rounded-full bg-orange-500/10 blur-3xl" />
+        <div className="pointer-events-none absolute bottom-0 right-1/4 -z-10 h-32 w-32 rounded-full bg-amber-400/5 blur-3xl" />
+
+        <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
+          <div className="max-w-2xl">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-400/20 bg-orange-400/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-orange-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_10px_rgba(251,146,60,0.8)]" />
+              Hoba Labs · Automated trading
+            </div>
+            <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+              EA Control Centre
+            </h1>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400">
+              Monitor your MetaTrader 5 account, manage your connection and keep track of your trading activity.
+            </p>
+          </div>
+
+          <div className={`inline-flex w-fit items-center gap-2 rounded-xl border px-4 py-3 text-xs font-semibold ${
+            hasAccess
+              ? 'border-emerald-400/20 bg-emerald-400/10 text-emerald-300'
+              : 'border-rose-400/20 bg-rose-400/10 text-rose-300'
+          }`}>
+            {hasAccess ? <ShieldCheck size={17} /> : <LockKeyhole size={17} />}
+            {hasAccess ? 'EA access active' : 'EA access locked'}
+          </div>
+        </div>
+      </motion.section>
+
+      {/* Account overview */}
+      <motion.section variants={itemVariants} className="space-y-3">
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <h2 className="text-sm font-semibold text-white">Account overview</h2>
+            <p className="mt-1 text-xs text-slate-500">Your latest connected account metrics</p>
+          </div>
+          <button
+            type="button"
+            onClick={fetchStats}
+            className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-400 transition hover:bg-slate-800 hover:text-white"
           >
-            {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-            <span>{copied ? 'Copied' : 'Copy'}</span>
+            <RefreshCw size={13} />
+            Refresh data
           </button>
         </div>
-        <p className="text-[11px] text-slate-500">Never share this token. It links your MetaTrader 5 terminal directly to your Hoba Labs subscriber account.</p>
-      </div>
 
-      {/* Download EA Button */}
-      <div className="pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div>
-          <h4 className="text-sm font-medium">Download Client Bridge EA</h4>
-          <p className="text-xs text-slate-400 mt-0.5">Drop this file into your MT5 `MQL5/Experts/` folder and attach to XAUUSD.</p>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <StatCard
+            title="Account balance"
+            value={formatMoney(stats.balance)}
+            caption="Available account funds"
+            icon={Wallet}
+            accent="orange"
+          />
+          <StatCard
+            title="Account equity"
+            value={formatMoney(stats.equity)}
+            caption="Balance including open positions"
+            icon={CircleDollarSign}
+            accent="blue"
+          />
+          <StatCard
+            title="Floating P&L"
+            value={formatMoney(stats.floating_pnl)}
+            caption="Unrealised profit or loss"
+            icon={Activity}
+            accent={stats.floating_pnl >= 0 ? 'green' : 'violet'}
+            valueClass={stats.floating_pnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}
+          />
+          <StatCard
+            title="Connection status"
+            value={isConnected ? 'Connected' : 'Offline'}
+            caption={isConnected ? 'Your MT5 account is linked' : 'No active MT5 connection'}
+            icon={Server}
+            accent={isConnected ? 'green' : 'violet'}
+            valueClass={isConnected ? 'text-emerald-400' : 'text-slate-200'}
+          />
         </div>
-        <button 
-          onClick={handleDownloadEA}
-          className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-slate-950 px-5 py-2.5 rounded-md text-sm font-semibold transition-all shadow-lg shadow-orange-500/20 flex items-center justify-center space-x-2"
+      </motion.section>
+
+      {/* Access / broker panel */}
+      {!hasAccess ? (
+        <motion.section
+          variants={itemVariants}
+          className="mx-auto grid w-full max-w-4xl overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/90 lg:grid-cols-[0.9fr_1.1fr]"
         >
-          <Download className="w-4 h-4" />
-          <span>Download .mq5 Bridge</span>
-        </button>
-      </div>
+          <div className="relative flex flex-col justify-between overflow-hidden bg-gradient-to-br from-orange-500/15 via-orange-500/5 to-transparent p-6 sm:p-8">
+            <div className="pointer-events-none absolute -bottom-16 -left-12 h-48 w-48 rounded-full bg-orange-500/10 blur-3xl" />
+            <div>
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-orange-400/20 bg-orange-400/10 text-orange-300">
+                <Zap size={23} />
+              </div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-orange-300">Get started</p>
+              <h2 className="mt-2 text-xl font-semibold leading-snug text-white">
+                Put your trading strategy to work.
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-slate-400">
+                Activate your Hoba Labs EA plan to connect an MT5 account and access automated execution.
+              </p>
+            </div>
+            <div className="mt-8 flex items-center gap-2 text-xs text-slate-500">
+              <ShieldCheck size={15} className="text-emerald-400" />
+              Secure account connection
+            </div>
+          </div>
 
-      {/* Setup Guide Warning Note */}
-      <div className="bg-slate-950 border border-slate-800 p-4 rounded-md flex items-start space-x-3 text-xs text-slate-400">
-        <ShieldAlert className="w-5 h-5 text-orange-400 shrink-0 mt-0.5" />
-        <div>
-          <strong className="text-slate-200 block mb-1">Important MT5 Terminal Setting:</strong>
-          Make sure to enable automated web requests in MetaTrader 5 by going to
-           <code className="text-orange-400 bg-slate-900 px-1 py-0.5 rounded">Tools -&gt; Options -&gt; Expert Advisors</code>
-            and checking <code className="text-orange-400 bg-slate-900 px-1 py-0.5 rounded">Allow WebRequest for listed URL
-              </code>, then add your Hostinger VPS domain: <code className="text-emerald-400 bg-slate-900 px-1 py-0.5 rounded">
-                https://hobalabs.......</code>.
-        </div>
-      </div>
-    </div>
+          <div className="space-y-6 p-6 sm:p-8">
+            <div>
+              <h3 className="text-sm font-semibold text-white">Activate your EA access</h3>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                Choose a plan or redeem a license key you already have.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsSubModalOpen(true)}
+              className="group flex w-full items-center justify-between rounded-2xl bg-gradient-to-r from-orange-500 to-amber-400 px-5 py-4 text-left text-slate-950 shadow-lg shadow-orange-500/10 transition hover:-translate-y-0.5 hover:shadow-orange-500/20"
+            >
+              <span className="flex items-center gap-3">
+                <span className="rounded-xl bg-black/10 p-2.5">
+                  <ShoppingBag size={19} />
+                </span>
+                <span>
+                  <span className="block text-sm font-bold">Explore EA plans</span>
+                  <span className="mt-0.5 block text-[11px] font-medium text-slate-900/70">Choose the plan that suits you</span>
+                </span>
+              </span>
+              <ArrowUpRight size={19} className="transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-slate-800" />
+              <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-slate-600">or use a license key</span>
+              <div className="h-px flex-1 bg-slate-800" />
+            </div>
+
+            <form onSubmit={handleRedeemKey} className="space-y-3">
+              <label className="block">
+                <span className="mb-2 block text-xs font-medium text-slate-300">License key</span>
+                <div className="relative">
+                  <KeyRound size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+                  <input
+                    type="text"
+                    value={licenseKeyInput}
+                    onChange={(e) => setLicenseKeyInput(e.target.value)}
+                    placeholder="HOBA-EA-XXXX-XXXX-XXXX"
+                    required
+                    className="w-full rounded-xl border border-slate-700/80 bg-slate-950/80 py-3 pl-11 pr-4 font-mono text-xs tracking-wide text-white outline-none transition placeholder:text-slate-600 focus:border-orange-400 focus:ring-4 focus:ring-orange-400/10"
+                  />
+                </div>
+              </label>
+              <button
+                type="submit"
+                disabled={redeemingKey}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:border-slate-600 hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {redeemingKey ? <RefreshCw size={15} className="animate-spin" /> : <KeyRound size={15} />}
+                {redeemingKey ? 'Verifying license...' : 'Activate license'}
+              </button>
+            </form>
+            <p className="text-center text-[11px] leading-5 text-slate-600">
+              Need help? Contact the Hoba Labs support team for assistance.
+            </p>
+          </div>
+        </motion.section>
+      ) : (
+        <motion.section
+          variants={itemVariants}
+          className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 sm:p-6"
+        >
+          <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+            <div className="flex items-start gap-4">
+              <div className={`rounded-2xl p-3 ${
+                brokerAcc ? 'bg-emerald-400/10 text-emerald-300' : 'bg-orange-400/10 text-orange-300'
+              }`}>
+                <Cpu size={22} />
+              </div>
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="text-sm font-semibold text-white">MetaTrader 5 connection</h2>
+                  <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${
+                    brokerAcc
+                      ? 'bg-emerald-400/10 text-emerald-300'
+                      : 'bg-slate-800 text-slate-400'
+                  }`}>
+                    {brokerAcc ? 'ACCOUNT LINKED' : 'NOT CONFIGURED'}
+                  </span>
+                </div>
+                <p className="mt-1.5 text-xs leading-5 text-slate-400">
+                  {brokerAcc
+                    ? `Account ${brokerAcc.account_login} · ${brokerAcc.server_name}`
+                    : 'Connect your MT5 trading account to get your EA environment ready.'}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowBrokerModal(true)}
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-orange-500 px-5 py-3 text-xs font-bold text-slate-950 transition hover:bg-orange-400"
+            >
+              {brokerAcc ? 'Update connection' : 'Connect MT5 account'}
+              <ChevronRight size={15} />
+            </button>
+          </div>
+        </motion.section>
+      )}
+
+      {/* Broker connection modal */}
+      <AnimatePresence>
+        {showBrokerModal && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/80 p-4 backdrop-blur-md"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onMouseDown={(e) => {
+              if (e.target === e.currentTarget && !connectingBroker) setShowBrokerModal(false);
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 12, scale: 0.98 }}
+              transition={{ duration: 0.22 }}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="broker-modal-title"
+              className="relative my-8 w-full max-w-lg rounded-3xl border border-slate-700/80 bg-slate-900 p-6 shadow-2xl shadow-black/40 sm:p-8"
+            >
+              <button
+                type="button"
+                onClick={() => setShowBrokerModal(false)}
+                disabled={connectingBroker}
+                aria-label="Close dialog"
+                className="absolute right-5 top-5 rounded-lg p-2 text-slate-500 transition hover:bg-slate-800 hover:text-white disabled:opacity-50"
+              >
+                <X size={18} />
+              </button>
+
+              <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl border border-orange-400/20 bg-orange-400/10 text-orange-300">
+                <Server size={22} />
+              </div>
+              <h2 id="broker-modal-title" className="text-xl font-semibold text-white">
+                Connect your MT5 account
+              </h2>
+              <p className="mt-2 max-w-sm text-sm leading-6 text-slate-400">
+                Enter your MetaTrader 5 account details to link your broker to Hoba Labs.
+              </p>
+
+              <form onSubmit={handleConnectBroker} className="mt-7 space-y-5">
+                <Field
+                  label="MT5 account login"
+                  type="text"
+                  inputMode="numeric"
+                  value={brokerData.login}
+                  onChange={(e) => setBrokerData({ ...brokerData, login: e.target.value })}
+                  required
+                  placeholder="e.g. 84930211"
+                  autoComplete="off"
+                />
+                <Field
+                  label="Trading password"
+                  type="password"
+                  value={brokerData.password}
+                  onChange={(e) => setBrokerData({ ...brokerData, password: e.target.value })}
+                  required
+                  placeholder="Enter your MT5 trading password"
+                  autoComplete="new-password"
+                />
+                <Field
+                  label="Broker server"
+                  type="text"
+                  value={brokerData.server}
+                  onChange={(e) => setBrokerData({ ...brokerData, server: e.target.value })}
+                  required
+                  placeholder="e.g. Deriv-Demo or ICMarketsSC-Demo"
+                  autoComplete="off"
+                />
+
+                <div className="flex items-start gap-2 rounded-xl border border-slate-800 bg-slate-950/60 p-3">
+                  <LockKeyhole size={15} className="mt-0.5 shrink-0 text-emerald-400" />
+                  <p className="text-[11px] leading-5 text-slate-500">
+                    Your credentials are used to establish the broker connection. Only submit details for the account you want to link.
+                  </p>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={connectingBroker}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-3.5 text-sm font-bold text-slate-950 transition hover:bg-orange-400 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {connectingBroker && <RefreshCw size={16} className="animate-spin" />}
+                  {connectingBroker ? 'Connecting account...' : 'Save and connect account'}
+                </button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <SubscriptionModal
+        isOpen={isSubModalOpen}
+        onClose={() => setIsSubModalOpen(false)}
+        mode="ea"
+      />
+    </motion.div>
   );
 }

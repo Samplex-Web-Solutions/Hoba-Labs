@@ -64,6 +64,7 @@ const Dashboard = ({ onOpenSubscriptionModal }) => {
   const { user } = useAuthStore();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isSubModalOpen, setIsSubModalOpen] = useState(false);
+  const [isSignalModalOpen, setIsSignalModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [botcopied, setBotCopied] = useState(false);
   const reduceMotion = useReducedMotion();
@@ -75,18 +76,18 @@ const Dashboard = ({ onOpenSubscriptionModal }) => {
 
   const formattedCurrentDate = sub?.currentPeriodEnd
     ? new Date(sub.currentPeriodEnd).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      })
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })
     : '';
 
   const formattedTrialDate = sub?.trialEndsAt
     ? new Date(sub.trialEndsAt).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      })
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })
     : '';
 
   const planDisplay = isPaid ? sub.planType : isTrialing ? `Free Trial${formattedTrialDate ? ` · Ends ${formattedTrialDate}` : ''}` : 'Free Tier';
@@ -162,7 +163,7 @@ const Dashboard = ({ onOpenSubscriptionModal }) => {
         {/* Top bar */}
         <motion.header
           variants={itemVariants}
-          className="flex flex-col gap-5 rounded-lg border border-white/[0.07] bg-slate-900/65 p-5 shadow-2xl shadow-black/10 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:p-6"
+          className="flex flex-col gap-5 rounded-lg border border-white/[0.07] bg-slate-900/65 px-5 shadow-2xl shadow-black/10 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:p-6"
         >
           <div className="min-w-0">
             <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
@@ -239,27 +240,24 @@ const Dashboard = ({ onOpenSubscriptionModal }) => {
                           {isPaid ? 'Active' : isTrialing ? 'Trial' : 'Free'}
                         </span>
                         <br />
-                        
+
                       </div>
                       <span className="text-xs text-slate-400">
-                          {isPaid && formattedCurrentDate ? `Next billing: ${formattedCurrentDate}` : ''}
-                        </span>
+                        {isPaid && formattedCurrentDate ? `Next billing: ${formattedCurrentDate}` : ''}
+                      </span>
                     </div>
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (onOpenSubscriptionModal) onOpenSubscriptionModal();
-                    else setIsSubModalOpen(true);
-                  }}
-                  className={`${isPaid ? 'hidden' : 'bg-gradient-to-r from-orange-400 to-amber-500'} mt-7 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-slate-950 shadow-lg shadow-orange-500/15 transition duration-200 hover:-translate-y-0.5 hover:shadow-orange-500/25 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-2 focus:ring-offset-slate-900`}
-                >
-                  {isPaid ? <Crown size={16} /> : <Zap size={16} />}
-                  {isPaid ? 'Manage subscription' : 'Upgrade your plan'}
-                  <ArrowUpRight size={16} />
-                </button>
+<button
+  type="button"
+  onClick={() => setIsSignalModalOpen(true)}
+  className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-blue-400/20 bg-blue-400/10 px-4 py-3 text-sm font-bold text-blue-200 transition duration-200 hover:bg-blue-400/20 focus:outline-none focus:ring-2 focus:ring-blue-300"
+>
+  <Zap size={16} />
+  Subscribe to Signals Plan
+  <ArrowUpRight size={16} />
+</button>
               </div>
             </div>
           </MotionCard>
@@ -404,8 +402,9 @@ const Dashboard = ({ onOpenSubscriptionModal }) => {
       </motion.main>
 
       <SubscriptionModal
-        isOpen={isSubModalOpen}
-        onClose={() => setIsSubModalOpen(false)}
+        isOpen={isSignalModalOpen}
+        onClose={() => setIsSignalModalOpen(false)}
+        mode="signals"
       />
     </div>
   );
