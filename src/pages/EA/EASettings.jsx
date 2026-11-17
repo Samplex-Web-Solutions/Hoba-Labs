@@ -1,3 +1,4 @@
+// src/pages/dashboard/EASettings.jsx
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../../store/authStore';
@@ -87,6 +88,7 @@ export default function EADashboard() {
     equity: 0,
     floating_pnl: 0,
     connection_status: 'DISCONNECTED',
+    activePositions: [],
   });
   const [brokerAcc, setBrokerAcc] = useState(null);
 
@@ -103,11 +105,14 @@ export default function EADashboard() {
       const data = await fetchEADashboardStatsApi();
       if (data.success) {
         setHasAccess(data.hasEaAccess);
-        setStats(data.stats || {
-          balance: 0,
-          equity: 0,
-          floating_pnl: 0,
-          connection_status: 'DISCONNECTED',
+        setStats({
+          ...(data.stats || {
+            balance: 0,
+            equity: 0,
+            floating_pnl: 0,
+            connection_status: 'DISCONNECTED',
+          }),
+          activePositions: data.activePositions || [],
         });
         setBrokerAcc(data.account || null);
       }
@@ -122,7 +127,7 @@ export default function EADashboard() {
     // Initial load with loader
     fetchStats(true);
 
-    // Set up real-time background polling interval (e.g. every 8 seconds)
+    // Set up real-time background polling interval (every 8 seconds)
     const pollInterval = setInterval(() => {
       fetchStats(false);
     }, 8000);
@@ -253,6 +258,64 @@ export default function EADashboard() {
           />
         </div>
       </motion.section>
+
+      {/* Active Open Positions Table Section */}
+      {hasAccess && brokerAcc && (
+        <motion.div variants={itemVariants} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 sm:p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-white">Active Open Positions</h2>
+              <p className="mt-1 text-xs text-slate-500">Live trades currently running on your MT5 account</p>
+            </div>
+            <span className="rounded-full bg-orange-500/10 px-3 py-1 text-xs font-semibold text-orange-400 border border-orange-500/20">
+              {stats.activePositions?.length || 0} Open {stats.activePositions?.length === 1 ? 'Trade' : 'Trades'}
+            </span>
+          </div>
+
+          {(!stats.activePositions || stats.activePositions.length === 0) ? (
+            <div className="rounded-xl border border-dashed border-slate-800 p-8 text-center text-xs text-slate-500">
+              No active open positions found on this account.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs text-slate-300">
+                <thead className="border-b border-slate-800 text-[11px] uppercase tracking-wider text-slate-500">
+                  <tr>
+                    <th className="pb-3 font-medium">Ticket</th>
+                    <th className="pb-3 font-medium">Symbol</th>
+                    <th className="pb-3 font-medium">Type</th>
+                    <th className="pb-3 font-medium">Volume</th>
+                    <th className="pb-3 font-medium">Entry Price</th>
+                    <th className="pb-3 font-medium">Current Price</th>
+                    <th className="pb-3 font-medium text-right">Profit / Loss</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60 font-mono">
+                  {stats.activePositions.map((pos) => (
+                    <tr key={pos.ticket} className="transition hover:bg-slate-800/40">
+                      <td className="py-3.5 text-slate-400">#{pos.ticket}</td>
+                      <td className="py-3.5 font-semibold text-white">{pos.symbol}</td>
+                      <td className="py-3.5">
+                        <span className={`inline-flex rounded px-2 py-0.5 text-[10px] font-bold ${
+                          pos.side === 'BUY' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'
+                        }`}>
+                          {pos.side}
+                        </span>
+                      </td>
+                      <td className="py-3.5">{pos.volume}</td>
+                      <td className="py-3.5">{pos.entryPrice}</td>
+                      <td className="py-3.5">{pos.currentPrice}</td>
+                      <td className={`py-3.5 text-right font-bold ${Number(pos.profit) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        {Number(pos.profit) >= 0 ? `+$${Number(pos.profit).toFixed(2)}` : `-$${Math.abs(Number(pos.profit)).toFixed(2)}`}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </motion.div>
+      )}
 
       {!hasAccess ? (
         <motion.section
